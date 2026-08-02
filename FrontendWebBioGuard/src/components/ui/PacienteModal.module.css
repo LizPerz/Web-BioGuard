@@ -1,0 +1,63 @@
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 440px;
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn 0.2s ease;
+}
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--color-border);
+}
+
+.title { font-size: 1.05rem; font-weight: 600; }
+
+.closeBtn {
+  background: none; border: none; color: var(--color-text-muted);
+  cursor: pointer; padding: 4px; border-radius: 6px; display: flex;
+}
+.closeBtn:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+
+.body { padding: 24px; }
+
+.field { margin-bottom: 20px; }
+.label { font-size: 0.85rem; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 6px; }
+.input {
+  width: 100%; padding: 12px 14px; background: var(--color-bg-input);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  color: var(--color-text-primary); font-family: var(--font-sans); font-size: 0.9rem; outline: none;
+}
+.input:focus { border-color: var(--color-cyan); box-shadow: 0 0 0 3px var(--color-cyan-glow); }
+
+.error { color: var(--color-danger); font-size: 0.82rem; margin-top: 4px; }
+.successMsg { color: var(--color-success); font-size: 0.85rem; text-align: center; }
+.apiError { color: var(--color-danger); font-size: 0.85rem; text-align: center; }
+
+.footer {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding: 16px 24px; border-top: 1px solid var(--color-border);
+}
+
+.qrBox {
+  margin-top: 16px; padding: 16px;
+  background: var(--color-bg-tertiary); border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.qrLabel { font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 8px; }
+.qrCode {
+  font-family: var(--font-mono); font-size: 1rem; font-weight: 600;
+  color: var(--color-cyan); word-break: break-all;
+}
+
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+@keyframes scaleIn { from { opacity:0; transform:scale(0.95) } to { opacity:1; transform:scale(1) } }

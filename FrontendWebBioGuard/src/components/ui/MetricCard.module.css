@@ -1,0 +1,92 @@
+.metricCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.metricCardRed::before { background: var(--color-danger); }
+.metricCardCyan::before { background: var(--color-cyan); }
+.metricCardPurple::before { background: var(--color-purple); }
+.metricCardYellow::before { background: var(--color-warning); }
+.metricCardGreen::before { background: var(--color-success); }
+.metricCardBlue::before { background: var(--color-blue); }
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metricIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metricIconRed { background: var(--color-danger-bg); color: var(--color-danger); }
+.metricIconCyan { background: var(--color-cyan-glow); color: var(--color-cyan); }
+.metricIconPurple { background: var(--color-purple-glow); color: var(--color-purple); }
+.metricIconYellow { background: var(--color-warning-bg); color: var(--color-warning); }
+.metricIconGreen { background: var(--color-success-bg); color: var(--color-success); }
+.metricIconBlue { background: var(--color-blue-glow); color: var(--color-blue); }
+
+.metricLabel {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.metricValue {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.metricUnit {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+
+.metricStatus {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metricTrend {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trendUp { color: var(--color-success); }
+.trendDown { color: var(--color-danger); }
+.trendStable { color: var(--color-text-muted); }

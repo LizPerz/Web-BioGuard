@@ -1,0 +1,239 @@
+.page { color: #F5F7FA; }
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #F5F7FA;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #8E9CB8;
+  margin-bottom: 24px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metricCard {
+  background: #111C2E;
+  border: 1px solid rgba(45, 156, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard:hover {
+  border-color: rgba(45, 156, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+}
+
+.metricTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.metricIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metricIconRed { background: rgba(255, 82, 82, 0.12); color: #ff5252; }
+.metricIconCyan { background: rgba(0, 229, 255, 0.12); color: #00e5ff; }
+.metricIconPurple { background: rgba(179, 136, 255, 0.12); color: #b388ff; }
+.metricIconYellow { background: rgba(255, 215, 64, 0.12); color: #ffd740; }
+.metricIconGreen { background: rgba(0, 230, 118, 0.12); color: #00e676; }
+
+.metricBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.metricBadgeActive { background: rgba(0, 230, 118, 0.12); color: #00e676; }
+.metricBadgeIdle { background: rgba(255, 255, 255, 0.06); color: #8E9CB8; }
+.metricBadgeWarn { background: rgba(255, 215, 64, 0.12); color: #ffd740; }
+
+.metricValue {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 2px;
+  color: #F5F7FA;
+}
+
+.metricUnit {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #8E9CB8;
+  margin-left: 4px;
+}
+
+.metricLabel {
+  font-size: 0.78rem;
+  color: #8E9CB8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.metricFooter {
+  font-size: 0.75rem;
+  color: #8E9CB8;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chartsRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.chartCard {
+  background: #111C2E;
+  border: 1px solid rgba(45, 156, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.chartTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #F5F7FA;
+  margin-bottom: 4px;
+}
+
+.chartSubtitle {
+  font-size: 0.8rem;
+  color: #8E9CB8;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #8E9CB8;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.emptyState {
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8E9CB8;
+  gap: 10px;
+}
+
+.emptyIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(45, 156, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-size: 0.9rem;
+  color: #8E9CB8;
+}
+
+.emptyText {
+  font-size: 0.78rem;
+  color: #5a6d8a;
+}
+
+.summaryBar {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  background: #111C2E;
+  border: 1px solid rgba(45, 156, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 24px;
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.summaryDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00e676;
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+}
+
+.summaryText {
+  font-size: 0.82rem;
+  color: #8E9CB8;
+}
+
+.summaryValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #F5F7FA;
+}
+
+@media (max-width: 1200px) {
+  .metricsGrid { grid-template-columns: repeat(2, 1fr); }
+  .chartsRow { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .metricsGrid { grid-template-columns: 1fr; }
+  .summaryBar { flex-direction: column; gap: 12px; }
+}

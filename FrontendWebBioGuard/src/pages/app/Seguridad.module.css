@@ -1,0 +1,409 @@
+.page {
+  color: #F5F7FA;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #F5F7FA;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #8E9CB8;
+  margin-bottom: 28px;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #111C2E;
+  border: 1px solid rgba(45, 156, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card:hover {
+  border-color: rgba(45, 156, 255, 0.2);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Left: Encryption card ── */
+.cipherCard {
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.cipherIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(45, 156, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2D9CFF;
+}
+
+.cipherLabel {
+  font-size: 0.85rem;
+  color: #8E9CB8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.cipherValue {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2D9CFF;
+  line-height: 1;
+}
+
+.cipherDesc {
+  font-size: 0.85rem;
+  color: #8E9CB8;
+  line-height: 1.5;
+  max-width: 260px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(45, 156, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #2D9CFF, #8FD7FF);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.progressLabel {
+  font-size: 0.8rem;
+  color: #8FD7FF;
+  font-weight: 500;
+}
+
+/* ── Patient card ── */
+.patientCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.patientAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2D9CFF, #8FD7FF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.patientInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.patientName {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #F5F7FA;
+}
+
+.patientId {
+  font-size: 0.75rem;
+  color: #8E9CB8;
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+.patientDate {
+  font-size: 0.78rem;
+  color: #8E9CB8;
+  margin-top: 4px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(45, 156, 255, 0.12);
+  color: #2D9CFF;
+  margin-top: 6px;
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2D9CFF;
+}
+
+.patientActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 156, 255, 0.2);
+  background: transparent;
+  color: #8FD7FF;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.actionBtn:hover {
+  background: rgba(45, 156, 255, 0.1);
+  border-color: #2D9CFF;
+  color: #F5F7FA;
+  transform: translateY(-1px);
+}
+
+/* ── Right bottom row ── */
+.bottomRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.caregiverCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+}
+
+.caregiverAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(141, 215, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8FD7FF;
+  flex-shrink: 0;
+}
+
+.caregiverInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.caregiverName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #F5F7FA;
+}
+
+.caregiverPerm {
+  font-size: 0.75rem;
+  color: #8E9CB8;
+  margin-top: 2px;
+}
+
+.caregiverActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.smallBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(45, 156, 255, 0.2);
+  background: transparent;
+  color: #8FD7FF;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.smallBtn:hover {
+  background: rgba(45, 156, 255, 0.1);
+  border-color: #2D9CFF;
+  color: #F5F7FA;
+}
+
+.addCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 24px;
+  border: 1px dashed rgba(45, 156, 255, 0.15);
+  border-radius: 20px;
+  background: transparent;
+  color: #8FD7FF;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.25s;
+}
+
+.addCard:hover {
+  border-color: #2D9CFF;
+  background: rgba(45, 156, 255, 0.04);
+  color: #F5F7FA;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Activity table ── */
+.activityCard {
+  margin-bottom: 0;
+}
+
+.activityTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #F5F7FA;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #8E9CB8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 12px 10px;
+}
+
+.table td {
+  padding: 14px 12px;
+  font-size: 0.85rem;
+  color: #F5F7FA;
+  background: rgba(17, 28, 46, 0.6);
+  border-top: 1px solid rgba(45, 156, 255, 0.06);
+  border-bottom: 1px solid rgba(45, 156, 255, 0.06);
+}
+
+.table td:first-child {
+  border-left: 1px solid rgba(45, 156, 255, 0.06);
+  border-radius: 10px 0 0 10px;
+}
+
+.table td:last-child {
+  border-right: 1px solid rgba(45, 156, 255, 0.06);
+  border-radius: 0 10px 10px 0;
+}
+
+.tableRow:hover td {
+  background: rgba(45, 156, 255, 0.04);
+  border-color: rgba(45, 156, 255, 0.1);
+  transition: all 0.2s;
+}
+
+.eventCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eventIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.statusSuccess {
+  background: rgba(0, 230, 118, 0.12);
+  color: #00e676;
+}
+
+.statusWarning {
+  background: rgba(255, 215, 64, 0.12);
+  color: #ffd740;
+}
+
+.statusInfo {
+  background: rgba(45, 156, 255, 0.12);
+  color: #2D9CFF;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.emptyRow td {
+  text-align: center;
+  color: #8E9CB8;
+  padding: 32px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+  .cipherCard {
+    grid-row: span 1;
+  }
+  .bottomRow {
+    grid-template-columns: 1fr;
+  }
+}
