@@ -3,15 +3,7 @@ name: Deploy Backend to GHCR
 on:
   push:
     branches: [main]
-    paths:
-      - 'BioGuard.Api/**'
-      - '.do/**'
-      - '.github/**'
   workflow_dispatch:
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/Backend-BioGuard
 
 jobs:
   build-and-push:
@@ -27,7 +19,7 @@ jobs:
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -38,5 +30,5 @@ jobs:
           file: ./BioGuard.Api/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ghcr.io/lizperz/backend-bioguard:latest
+            ghcr.io/lizperz/backend-bioguard:${{ github.sha }}
