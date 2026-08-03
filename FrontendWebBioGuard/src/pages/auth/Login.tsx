@@ -17,6 +17,8 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<Partial<LoginWebRequest>>({});
   const [apiError, setApiError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
   const [codeLogging, setCodeLogging] = useState(!!code);
 
   useEffect(() => {
@@ -54,12 +56,27 @@ export default function LoginPage() {
     if (!validate()) return;
     setSubmitting(true);
     setApiError('');
+    setUnverified(false);
     try {
       await login(form);
       window.location.replace(ROUTES.DASHBOARD);
     } catch (err: any) {
-      setApiError(err?.message || 'Credenciales incorrectas');
+      const message = err?.message || 'Credenciales incorrectas';
+      setApiError(message);
+      setUnverified(/verificad/i.test(message));
       setSubmitting(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (sendingCode || !form.correo) return;
+    setSendingCode(true);
+    try {
+      await authService.enviar2FA({ correo: form.correo });
+      window.location.replace(`${ROUTES.CONFIRMAR_CORREO}?correo=${encodeURIComponent(form.correo)}`);
+    } catch {
+      setApiError('Error al reenviar el código. Inténtalo de nuevo.');
+      setSendingCode(false);
     }
   };
 
@@ -67,6 +84,13 @@ export default function LoginPage() {
     <AuthLayout title="Bienvenido" subtitle="Ingresa tus credenciales para acceder al panel">
       <form className={styles.form} onSubmit={handleSubmit} noValidate autoComplete="off">
         {apiError && <div className={styles.errorBox}>{apiError}</div>}
+
+        {unverified && (
+          <button type="button" onClick={handleResendCode} disabled={sendingCode}
+            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-cyan)', cursor: sendingCode ? 'default' : 'pointer', fontSize: '0.85rem', fontFamily: 'var(--font-sans)', textAlign: 'center', display: 'block', margin: '0 auto 12px' }}>
+            {sendingCode ? 'Enviando código...' : '¿No recibiste el código? Reenviar y verificar mi correo'}
+          </button>
+        )}
 
         <Input
           label="Correo electrónico" type="email" placeholder="tu@correo.com"
