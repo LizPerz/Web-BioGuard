@@ -35,6 +35,7 @@ export default function RegisterPage() {
     if (!form.password) e.password = 'La contraseña es obligatoria';
     else if (form.password.length < 8) e.password = 'Mínimo 8 caracteres';
     else if (!/[A-Z]/.test(form.password)) e.password = 'Debe tener al menos una mayúscula';
+    else if (!/[a-z]/.test(form.password)) e.password = 'Debe tener al menos una minúscula';
     else if (!/[0-9]/.test(form.password)) e.password = 'Debe tener al menos un número';
     else if (!/[!@#$%^&*(),.?":{}|<>]/.test(form.password)) e.password = 'Debe tener un carácter especial (!@#$%)';
     if (form.password !== confirmPassword) e.confirmPassword = 'Las contraseñas no coinciden';
@@ -62,7 +63,8 @@ export default function RegisterPage() {
         window.location.replace(ROUTES.DASHBOARD);
       }
     } catch (err: any) {
-      setErrors({ ...errors, correo: 'Este correo ya está registrado. ¿Ya tienes cuenta?' });
+      setErrors({});
+      setApiError(err.message || 'Error al registrarte. Intenta de nuevo.');
       setLoading(false);
     }
   };
