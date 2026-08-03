@@ -6,6 +6,8 @@ export const ROUTES = {
   LOGIN: '/login',
   REGISTRO: '/registro',
   CONFIRMAR_CORREO: '/confirmar-correo',
+  OLVIDE_CONTRASENA: '/olvide-contrasena',
+  REESTABLECER_CONTRASENA: '/reestablecer-contrasena',
   CHECKOUT: '/checkout',
   CONFIGURACION_COMPLETADA: '/configuracion-completada',
   PAGO_EXITO: '/pago/exito',

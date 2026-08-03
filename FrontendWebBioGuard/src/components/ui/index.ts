@@ -1,5 +1,6 @@
 export { Button } from './Button';
 export { Input } from './Input';
+export { PasswordRequirements } from './PasswordRequirements';
 export { Card } from './Card';
 export { Modal } from './Modal';
 export { LoadingSpinner, LoadingOverlay, EmptyState } from './Feedback';
