@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Se commitea para que el build de produccion apunte al backend de DigitalOcean
+!.env.production
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
