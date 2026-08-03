@@ -7,7 +7,7 @@ export const ROUTES = {
   REGISTRO: '/registro',
   CONFIRMAR_CORREO: '/confirmar-correo',
   OLVIDE_CONTRASENA: '/olvide-contrasena',
-  REESTABLECER_CONTRASENA: '/reestablecer-contrasena',
+  REESTABLECER_CONTRASENA: '/reset-password',
   CHECKOUT: '/checkout',
   CONFIGURACION_COMPLETADA: '/configuracion-completada',
   PAGO_EXITO: '/pago/exito',

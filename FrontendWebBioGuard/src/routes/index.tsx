@@ -49,6 +49,10 @@ export const router = createBrowserRouter([
     element: <ResetPasswordPage />,
   },
   {
+    path: '/reestablecer-contrasena',
+    element: <ResetPasswordPage />,
+  },
+  {
     path: ROUTES.PAGO_EXITO,
     element: <PagoExitoPage />,
   },
