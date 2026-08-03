@@ -103,8 +103,14 @@ export default function LoginPage() {
           label="Contraseña" type="password" placeholder="........"
           icon={<Lock size={18} />} value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
-          error={errors.password} autoComplete="new-password" name="pass-field"
+          error={errors.password} autoComplete="current-password" name="pass-field"
         />
+
+        <div style={{ textAlign: 'right', marginTop: -6 }}>
+          <Link to={ROUTES.OLVIDE_CONTRASENA} style={{ fontSize: '0.8rem', color: 'var(--color-cyan)' }}>
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
 
         <div className={styles.actions}>
           <Button type="submit" fullWidth size="lg" loading={submitting}>

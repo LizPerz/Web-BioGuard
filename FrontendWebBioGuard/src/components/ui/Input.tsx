@@ -6,9 +6,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   icon?: React.ReactNode;
   error?: string;
+  success?: boolean;
 }
 
-export function Input({ label, icon, error, className = '', ...props }: InputProps) {
+export function Input({ label, icon, error, success, className = '', ...props }: InputProps) {
   const isPassword = props.type === 'password';
   const [show, setShow] = useState(false);
   const inputType = isPassword ? (show ? 'text' : 'password') : props.type;
@@ -21,7 +22,7 @@ export function Input({ label, icon, error, className = '', ...props }: InputPro
         <input
           {...props}
           type={inputType}
-          className={`${styles.input} ${error ? styles.error : ''} ${className}`}
+          className={`${styles.input} ${error ? styles.error : ''} ${success && !error ? styles.success : ''} ${className}`}
         />
         {isPassword && (
           <button

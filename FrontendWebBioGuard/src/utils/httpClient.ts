@@ -20,8 +20,16 @@ httpClient.interceptors.request.use(
 
 httpClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<{ message?: string }>) => {
-    const message = error.response?.data?.message || error.message || 'Error de conexión';
+  (error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>) => {
+    const data = error.response?.data;
+    const firstFieldError = data?.errors
+      ? Object.values(data.errors).find((msgs) => Array.isArray(msgs) && msgs.length > 0)?.[0]
+      : undefined;
+    const message =
+      data?.message ||
+      firstFieldError ||
+      error.message ||
+      'Error de conexión. Intenta de nuevo.';
     return Promise.reject({ message, status: error.response?.status });
   }
 );

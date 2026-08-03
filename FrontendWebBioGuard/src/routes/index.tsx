@@ -11,6 +11,8 @@ import PagoCanceladoPage from '../pages/public/PagoCancelado';
 import LoginPage from '../pages/auth/Login';
 import RegisterPage from '../pages/auth/Register';
 import VerifyEmailPage from '../pages/auth/VerifyEmail';
+import ForgotPasswordPage from '../pages/auth/ForgotPassword';
+import ResetPasswordPage from '../pages/auth/ResetPassword';
 import DashboardPage from '../pages/app/Dashboard';
 import SaludPage from '../pages/app/Salud';
 import SeguridadPage from '../pages/app/Seguridad';
@@ -37,6 +39,14 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.CONFIRMAR_CORREO,
     element: <VerifyEmailPage />,
+  },
+  {
+    path: ROUTES.OLVIDE_CONTRASENA,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: ROUTES.REESTABLECER_CONTRASENA,
+    element: <ResetPasswordPage />,
   },
   {
     path: ROUTES.PAGO_EXITO,
