@@ -1,0 +1,18 @@
+name: bioguard-web
+region: nyc
+
+static_sites:
+  - name: bioguard-web
+    build_command: npm run build
+    build_dir: dist
+    output_dir: dist
+    environment_slug: node-js
+    github:
+      repo: LizPerz/Web-BioGuard
+      branch: main
+      deploy_on_push: true
+    envs:
+      - key: VITE_API_URL
+        value: https://bioguard-api-lkvnq.ondigitalocean.app
+      - key: NODE_ENV
+        value: production
