@@ -5,7 +5,9 @@ import { ContentCard } from '../../components/ui/ContentCard';
 import { PrimaryButton, DangerButton, SecondaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
 import { mockUser } from '../../data/mockData';
-import { useState, useRef, useCallback } from 'react';
+import { getUser } from '../../lib/auth';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './Settings.css';
 
 interface PasswordChecks {
@@ -17,15 +19,27 @@ interface PasswordChecks {
 }
 
 export function Settings() {
+  const location = useLocation();
+  const session = getUser();
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
 
-  const [firstName, setFirstName] = useState(mockUser.firstName);
+  const sessionName = session?.nombre ?? `${mockUser.firstName} ${mockUser.lastName}`.trim();
+
+  const [firstName, setFirstName] = useState(session?.nombre ?? mockUser.firstName);
   const [lastName, setLastName] = useState(mockUser.lastName);
   const [maternalLastName, setMaternalLastName] = useState(mockUser.maternalLastName);
   const [newEmail, setNewEmail] = useState('');
   const [currentPass, setCurrentPass] = useState('');
   const [newPass, setNewPass] = useState('');
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.hash]);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -75,11 +89,11 @@ export function Settings() {
     <DashboardLayout>
       <PageHeader
         title="Ajustes de Cuenta"
-        subtitle={`Configuración de tu perfil · ${mockUser.firstName} ${mockUser.lastName}`}
+        subtitle={`Configuración de tu perfil · ${sessionName}`}
       />
 
       <div className="settings__row settings__row--three">
-        <ContentCard className="settings__avatar-card">
+        <ContentCard id="avatar" className="settings__avatar-card" style={{ scrollMarginTop: 88 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Camera size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Foto de Perfil</h3>
@@ -93,7 +107,7 @@ export function Settings() {
           </SecondaryButton>
         </ContentCard>
 
-        <ContentCard>
+        <ContentCard id="perfil" style={{ scrollMarginTop: 88 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <User size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Editar Perfil</h3>
@@ -120,7 +134,7 @@ export function Settings() {
           </div>
         </ContentCard>
 
-        <ContentCard>
+        <ContentCard id="correo" style={{ scrollMarginTop: 88 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Mail size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Cambiar Correo</h3>
@@ -140,7 +154,7 @@ export function Settings() {
       </div>
 
       <div className="settings__row settings__row--bottom">
-        <ContentCard style={{ flex: 1, maxWidth: 420 }}>
+        <ContentCard id="password" style={{ flex: 1, maxWidth: 420, scrollMarginTop: 88 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <LockKeyhole size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Cambiar Contraseña</h3>
@@ -186,7 +200,7 @@ export function Settings() {
       </div>
 
       <div style={{ marginTop: 32 }}>
-        <ContentCard variant="danger">
+        <ContentCard id="peligro" variant="danger" style={{ scrollMarginTop: 88 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <TriangleAlert size={iconSize} strokeWidth={1.8} style={{ color: 'var(--danger)' }} />
             <h3 className="settings__card-title" style={{ color: 'var(--danger)' }}>Zona de Peligro</h3>

@@ -6,11 +6,12 @@ interface ContentCardProps {
   className?: string;
   variant?: 'default' | 'dashed' | 'danger';
   style?: React.CSSProperties;
+  id?: string;
 }
 
-export function ContentCard({ children, className = '', variant = 'default', style }: ContentCardProps) {
+export function ContentCard({ children, className = '', variant = 'default', style, id }: ContentCardProps) {
   return (
-    <div className={`content-card content-card--${variant} ${className}`} style={style}>
+    <div id={id} className={`content-card content-card--${variant} ${className}`} style={style}>
       {children}
     </div>
   );

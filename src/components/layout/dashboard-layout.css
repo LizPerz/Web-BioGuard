@@ -5,8 +5,13 @@
 }
 
 .dashboard-layout__sidebar-placeholder {
-  width: var(--sidebar-width);
+  width: 0;
   flex-shrink: 0;
+  transition: width 220ms ease;
+}
+
+.dashboard-layout--sidebar-open .dashboard-layout__sidebar-placeholder {
+  width: var(--sidebar-width);
 }
 
 .dashboard-layout__right {

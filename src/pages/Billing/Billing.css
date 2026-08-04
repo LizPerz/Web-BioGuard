@@ -95,8 +95,36 @@
   padding-top: var(--space-8);
 }
 
+.billing__onboarding-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 0 12px;
+}
+
 @media (max-width: 1023px) {
   .billing__row {
     grid-template-columns: 1fr;
+  }
+  .billing__onboarding-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .billing__onboarding-cards > :last-child {
+    grid-column: 1 / -1;
+    max-width: 320px;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .billing__onboarding-cards {
+    grid-template-columns: 1fr;
+    max-width: 280px;
+    margin: 0 auto;
   }
 }

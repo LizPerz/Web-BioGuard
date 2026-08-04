@@ -5,7 +5,7 @@ import { AuthCard } from '../../components/auth/AuthCard';
 import { PrimaryButton } from '../../components/ui/buttons';
 import { CodeInput } from '../../components/ui/inputs';
 import { verificar2FA, enviar2FA, ApiError } from '../../lib/api';
-import { saveSession } from '../../lib/auth';
+import { saveSession, setPendingOnboarding } from '../../lib/auth';
 
 export function VerifyEmail() {
   const navigate = useNavigate();
@@ -39,7 +39,8 @@ export function VerifyEmail() {
             plan: result.plan,
           },
         );
-        navigate('/dashboard');
+        setPendingOnboarding(true);
+        navigate('/billing');
       }
     } catch (err) {
       if (err instanceof ApiError) {

@@ -1,15 +1,52 @@
 import { Crown, CreditCard, Shield, ReceiptText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { PrimaryButton, SecondaryButton } from '../../components/ui/buttons';
 import { ContentCard } from '../../components/ui/ContentCard';
 import { StatusBadge } from '../../components/ui/badges';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { subscriptionFeatures } from '../../data/mockData';
+import { PricingCard } from '../../components/pricing/PricingCard';
+import { subscriptionFeatures, plans } from '../../data/mockData';
+import { getPendingOnboarding, clearPendingOnboarding, updateSessionPlan } from '../../lib/auth';
 import './Billing.css';
 
 export function Billing() {
+  const navigate = useNavigate();
   const iconSize = 16;
+  const onboarding = getPendingOnboarding();
+
+  if (onboarding) {
+    return (
+      <DashboardLayout>
+        <div className="billing__onboarding">
+          <PageHeader
+            title="Elige tu nivel de protección"
+            subtitle="Facturación mensual"
+          />
+
+          <div className="billing__onboarding-cards">
+            {plans.map((plan) => (
+              <PricingCard
+                key={plan.id}
+                label={plan.label}
+                name={plan.name}
+                price={plan.monthlyPrice}
+                period="/mes"
+                benefits={plan.benefits}
+                recommended={plan.recommended}
+                onSelect={() => {
+                  updateSessionPlan(plan.name);
+                  clearPendingOnboarding();
+                  navigate('/dashboard');
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
