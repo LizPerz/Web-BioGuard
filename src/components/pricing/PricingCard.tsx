@@ -9,9 +9,10 @@ interface PricingCardProps {
   period: string;
   benefits: string[];
   recommended: boolean;
+  onSelect?: () => void;
 }
 
-export function PricingCard({ label, name, price, period, benefits, recommended }: PricingCardProps) {
+export function PricingCard({ label, name, price, period, benefits, recommended, onSelect }: PricingCardProps) {
   return (
     <div className={`pricing-card ${recommended ? 'pricing-card--recommended' : ''}`}>
       {recommended && (
@@ -36,7 +37,7 @@ export function PricingCard({ label, name, price, period, benefits, recommended 
         ))}
       </ul>
       <div className="pricing-card__action">
-        <PrimaryButton fullWidth>
+        <PrimaryButton fullWidth onClick={onSelect}>
           {price === 'Gratis' ? 'Comenzar gratis' : 'Seleccionar plan'}
         </PrimaryButton>
       </div>

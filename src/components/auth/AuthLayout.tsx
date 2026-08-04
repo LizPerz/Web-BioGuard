@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './auth-layout.css';

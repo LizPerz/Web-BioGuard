@@ -18,7 +18,6 @@ interface PasswordChecks {
 
 export function Settings() {
   const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
 
   const [firstName, setFirstName] = useState(mockUser.firstName);
@@ -58,7 +57,7 @@ export function Settings() {
     minLength: newPass.length >= 8,
     hasUpper: /[A-Z]/.test(newPass),
     hasNumber: /[0-9]/.test(newPass),
-    hasSymbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPass),
+    hasSymbol: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPass),
     noSpaces: newPass.length > 0 && !/\s/.test(newPass),
   };
 

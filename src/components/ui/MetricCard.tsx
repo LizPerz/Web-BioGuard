@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { HeartPulse, Thermometer, Droplets, Brain } from 'lucide-react';
 import { StatusBadge } from './badges';
 import './metric-card.css';

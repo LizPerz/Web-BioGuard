@@ -1,10 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { AuthCard } from '../../components/auth/AuthCard';
 import { PrimaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
 import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { registerWeb, ApiError } from '../../lib/api';
+import { saveSession } from '../../lib/auth';
 import './Register.css';
 
 interface PasswordChecks {
@@ -17,6 +19,8 @@ interface PasswordChecks {
 
 export function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const selectedPlan = (location.state as { plan?: string } | null)?.plan ?? 'Gratis';
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState('');
@@ -28,6 +32,8 @@ export function Register() {
 
   const [nameErrors, setNameErrors] = useState<Record<string, string>>({});
   const [emailAlert, setEmailAlert] = useState('');
+  const [formError, setFormError] = useState('');
+  const [loading, setLoading] = useState(false);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const flashError = useCallback((key: string, msg: string) => {
@@ -57,7 +63,7 @@ export function Register() {
     minLength: password.length >= 8,
     hasUpper: /[A-Z]/.test(password),
     hasNumber: /[0-9]/.test(password),
-    hasSymbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    hasSymbol: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
     noSpaces: password.length > 0 && !/\s/.test(password),
   };
 
@@ -65,9 +71,46 @@ export function Register() {
   const confirmMatch = confirmPassword.length > 0 && confirmPassword === password;
   const canSubmit = allChecksPass && confirmMatch && firstName && lastName && email;
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (canSubmit) navigate('/verify-email');
+    if (!canSubmit) return;
+    setLoading(true);
+    setFormError('');
+    try {
+      const result = await registerWeb({
+        Nombre: firstName.trim(),
+        ApellidoPaterno: lastName.trim(),
+        ApellidoMaterno: maternalLastName.trim() || undefined,
+        Correo: email.trim(),
+        Password: password,
+        PlanNombre: selectedPlan,
+      });
+      if (result.requiresVerification) {
+        navigate('/verify-email', { state: { correo: email.trim(), userId: result.userId } });
+        return;
+      }
+      if (result.token) {
+        saveSession(
+          result.token,
+          result.refreshToken,
+          {
+            id: result.userId ?? '',
+            nombre: result.nombre ?? '',
+            rol: result.rol ?? '',
+            plan: result.plan ?? '',
+          },
+        );
+      }
+      navigate('/dashboard');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setFormError(err.message);
+      } else {
+        setFormError('Ocurrió un error inesperado. Intenta de nuevo.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const checkItems: { key: keyof PasswordChecks; label: string }[] = [
@@ -161,7 +204,14 @@ export function Register() {
             </div>
           )}
           <div style={{ height: 20 }} />
-          <PrimaryButton type="submit" fullWidth disabled={!canSubmit}>Registrarse</PrimaryButton>
+          {formError && (
+            <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(220, 38, 38, 0.12)', border: '1px solid rgba(220, 38, 38, 0.35)', color: 'var(--danger, #dc2626)', fontSize: 13 }}>
+              {formError}
+            </div>
+          )}
+          <PrimaryButton type="submit" fullWidth disabled={!canSubmit || loading}>
+            {loading ? 'Creando cuenta…' : 'Registrarse'}
+          </PrimaryButton>
         </form>
       </AuthCard>
     </AuthLayout>

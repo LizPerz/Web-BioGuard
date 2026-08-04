@@ -7,7 +7,7 @@ import { CodeInput } from '../../components/ui/inputs';
 import { verificar2FA, enviar2FA, ApiError } from '../../lib/api';
 import { saveSession } from '../../lib/auth';
 
-export function VerifyEmail() {
+export function Verify2FA() {
   const navigate = useNavigate();
   const location = useLocation();
   const correo = (location.state as { correo?: string } | null)?.correo ?? '';
@@ -15,10 +15,6 @@ export function VerifyEmail() {
   const [formError, setFormError] = useState('');
   const [resendMsg, setResendMsg] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (index: number, val: string) => {
-    setCode((prev) => prev.map((c, i) => (i === index ? val : c)));
-  };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,12 +64,18 @@ export function VerifyEmail() {
   return (
     <AuthLayout>
       <AuthCard
-        title="Confirmación de Correo"
-        subtitle={correo ? `Hemos enviado un código de verificación a ${correo}` : 'Ingresa el código de verificación enviado a tu correo'}
+        title="Verificación de Seguridad"
+        subtitle={correo ? `Hemos enviado un código 2FA a ${correo}` : 'Ingresa el código 2FA enviado a tu correo'}
         maxWidth={480}
+        footer={
+          <p>
+            ¿Cambiar de cuenta?{' '}
+            <Link to="/login">Volver a iniciar sesión</Link>
+          </p>
+        }
       >
         <form onSubmit={handleVerify}>
-          <CodeInput value={code} onChange={handleChange} />
+          <CodeInput value={code} onChange={(index, val) => setCode((prev) => prev.map((c, i) => (i === index ? val : c)))} />
           <div style={{ height: 32 }} />
           {formError && (
             <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(220, 38, 38, 0.12)', border: '1px solid rgba(220, 38, 38, 0.35)', color: 'var(--danger, #dc2626)', fontSize: 13 }}>
