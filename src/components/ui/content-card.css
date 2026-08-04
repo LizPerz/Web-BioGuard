@@ -1,0 +1,26 @@
+.content-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  transition: border-color var(--transition-fast);
+}
+
+.content-card:hover {
+  border-color: var(--border-subtle);
+}
+
+.content-card--dashed {
+  border-style: dashed;
+  border-color: var(--border-main);
+}
+
+.content-card--danger {
+  border-color: rgba(255, 79, 95, 0.25);
+}
+
+@media (max-width: 640px) {
+  .content-card {
+    padding: 14px 14px;
+  }
+}

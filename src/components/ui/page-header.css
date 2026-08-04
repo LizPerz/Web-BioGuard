@@ -1,0 +1,44 @@
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.page-header__title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.page-header__subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1023px) {
+  .page-header__title {
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    margin-bottom: var(--space-20);
+  }
+  .page-header__title {
+    font-size: 21px;
+  }
+  .page-header__action {
+    width: 100%;
+  }
+  .page-header__action .btn {
+    width: 100%;
+  }
+}
