@@ -12,6 +12,7 @@ import './Register.css';
 interface PasswordChecks {
   minLength: boolean;
   hasUpper: boolean;
+  hasLower: boolean;
   hasNumber: boolean;
   hasSymbol: boolean;
   noSpaces: boolean;
@@ -62,6 +63,7 @@ export function Register() {
   const checks: PasswordChecks = {
     minLength: password.length >= 8,
     hasUpper: /[A-Z]/.test(password),
+    hasLower: /[a-z]/.test(password),
     hasNumber: /[0-9]/.test(password),
     hasSymbol: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
     noSpaces: password.length > 0 && !/\s/.test(password),
@@ -116,6 +118,7 @@ export function Register() {
   const checkItems: { key: keyof PasswordChecks; label: string }[] = [
     { key: 'minLength', label: 'Mínimo 8 caracteres' },
     { key: 'hasUpper', label: 'Al menos una mayúscula' },
+    { key: 'hasLower', label: 'Al menos una minúscula' },
     { key: 'hasNumber', label: 'Al menos un número' },
     { key: 'hasSymbol', label: 'Al menos un símbolo' },
     { key: 'noSpaces', label: 'Sin espacios' },

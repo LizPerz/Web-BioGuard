@@ -14,6 +14,7 @@ import './Settings.css';
 interface PasswordChecks {
   minLength: boolean;
   hasUpper: boolean;
+  hasLower: boolean;
   hasNumber: boolean;
   hasSymbol: boolean;
   noSpaces: boolean;
@@ -73,6 +74,7 @@ export function Settings() {
   const passChecks: PasswordChecks = {
     minLength: newPass.length >= 8,
     hasUpper: /[A-Z]/.test(newPass),
+    hasLower: /[a-z]/.test(newPass),
     hasNumber: /[0-9]/.test(newPass),
     hasSymbol: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPass),
     noSpaces: newPass.length > 0 && !/\s/.test(newPass),
@@ -83,6 +85,7 @@ export function Settings() {
   const passCheckItems: { key: keyof PasswordChecks; label: string }[] = [
     { key: 'minLength', label: 'Mínimo 8 caracteres' },
     { key: 'hasUpper', label: 'Al menos una mayúscula' },
+    { key: 'hasLower', label: 'Al menos una minúscula' },
     { key: 'hasNumber', label: 'Al menos un número' },
     { key: 'hasSymbol', label: 'Al menos un símbolo' },
     { key: 'noSpaces', label: 'Sin espacios' },

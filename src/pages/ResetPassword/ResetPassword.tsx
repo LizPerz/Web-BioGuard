@@ -10,6 +10,7 @@ import { resetPassword, ApiError } from '../../lib/api';
 interface PasswordChecks {
   minLength: boolean;
   hasUpper: boolean;
+  hasLower: boolean;
   hasNumber: boolean;
   hasSymbol: boolean;
   noSpaces: boolean;
@@ -24,11 +25,13 @@ export function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState('');
+  const [passError, setPassError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const checks: PasswordChecks = {
     minLength: password.length >= 8,
     hasUpper: /[A-Z]/.test(password),
+    hasLower: /[a-z]/.test(password),
     hasNumber: /[0-9]/.test(password),
     hasSymbol: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
     noSpaces: password.length > 0 && !/\s/.test(password),
@@ -41,6 +44,7 @@ export function ResetPassword() {
   const checkItems: { key: keyof PasswordChecks; label: string }[] = [
     { key: 'minLength', label: 'Mínimo 8 caracteres' },
     { key: 'hasUpper', label: 'Al menos una mayúscula' },
+    { key: 'hasLower', label: 'Al menos una minúscula' },
     { key: 'hasNumber', label: 'Al menos un número' },
     { key: 'hasSymbol', label: 'Al menos un símbolo' },
     { key: 'noSpaces', label: 'Sin espacios' },
@@ -99,6 +103,14 @@ export function ResetPassword() {
             eyeOffIcon={<EyeOff size={17} strokeWidth={1.8} />}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === ' ') {
+                e.preventDefault();
+                setPassError('No se permiten espacios');
+                setTimeout(() => setPassError(''), 2000);
+              }
+            }}
+            error={passError}
           />
           {password.length > 0 && (
             <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
