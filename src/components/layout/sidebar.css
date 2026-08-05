@@ -131,7 +131,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   border-radius: var(--radius-nav-item);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--sidebar-plan-bg);
 }
 
 .sidebar__logout {

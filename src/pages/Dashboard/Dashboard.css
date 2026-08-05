@@ -5,6 +5,68 @@
   margin-bottom: 24px;
 }
 
+.dashboard__patient {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.dashboard__patient-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dashboard__patient-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--icon-bg-security);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dashboard__patient-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.dashboard__patient-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.dashboard__patient-stats {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.dashboard__patient-stat {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dashboard__patient-stat b {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-right: 3px;
+}
+
 .dashboard__row {
   display: grid;
   grid-template-columns: 2fr 1fr;

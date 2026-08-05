@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   height: var(--header-height);
-  background-color: #0C1526;
+  background-color: var(--bg-header);
   border-bottom: 1px solid var(--border-main);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -49,17 +49,22 @@
 }
 
 .dashboard-header__logo-img {
-  height: 40px;
+  height: 48px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 0 10px rgba(8, 216, 242, 0.25));
+  filter: drop-shadow(0 0 12px rgba(8, 216, 242, 0.3));
 }
 
 .dashboard-header__logo-text {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
+  font-style: italic;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .dashboard-header__right {
@@ -85,7 +90,7 @@
 
 .dashboard-header__bell:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--hover-subtle);
 }
 
 .dashboard-header__user-wrap {
@@ -107,7 +112,7 @@
 }
 
 .dashboard-header__user:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--hover-bg);
 }
 
 .dashboard-header__avatar {
@@ -214,10 +219,10 @@
     font-size: 12px;
   }
   .dashboard-header__logo-img {
-    height: 32px;
+    height: 38px;
   }
   .dashboard-header__logo-text {
-    font-size: 15px;
+    font-size: 17px;
   }
   .dashboard-header__name {
     display: none;

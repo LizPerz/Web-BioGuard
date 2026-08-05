@@ -18,8 +18,9 @@
 }
 
 .auth-card__logo-img {
-  height: 72px;
+  height: 96px;
   width: auto;
+  filter: drop-shadow(0 6px 18px rgba(8, 216, 242, 0.18));
 }
 
 .auth-card__title {

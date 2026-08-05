@@ -1,3 +1,5 @@
+import { getAccessToken } from './auth';
+
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://bioguard-api-lkvnq.ondigitalocean.app';
 
 export class ApiError extends Error {
@@ -16,12 +18,14 @@ interface ApiErrorBody {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getAccessToken();
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     });
@@ -149,4 +153,118 @@ export function logout(token: string): Promise<MessageResponse> {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+// ── Pacientes ─────────────────────────────────────────────
+
+export interface PacienteResponse {
+  id: string;
+  nombre: string;
+  esDiabetico?: boolean;
+  perfilCompletado?: boolean;
+  fechaNacimiento?: string | null;
+  edad?: number;
+  pesoKg?: number;
+  estaturaCm?: number;
+  sexo?: string | null;
+  familiaresDiabetes?: boolean;
+  actividadFisica?: string | null;
+  codigoAccesoQr?: string | null;
+}
+
+export interface CrearPacientePayload {
+  Nombre: string;
+  Edad?: number;
+  PesoKg?: number;
+  EstaturaCm?: number;
+  EsDiabetico?: boolean;
+}
+
+export interface CrearPacienteResponse {
+  pacienteId?: string;
+  message?: string;
+  codigoAccesoQr?: string | null;
+  codigoExpira?: string | null;
+}
+
+export function getMiPaciente(): Promise<PacienteResponse | null> {
+  return request<PacienteResponse>('/api/Pacientes/mi-paciente').catch((err: unknown) => {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  });
+}
+
+export function createPaciente(payload: CrearPacientePayload): Promise<CrearPacienteResponse> {
+  return request<CrearPacienteResponse>('/api/Pacientes', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function actualizarPaciente(id: string, payload: { Nombre: string }): Promise<MessageResponse> {
+  return request<MessageResponse>(`/api/Pacientes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function actualizarBiometriaPaciente(
+  id: string,
+  payload: {
+    Edad?: number;
+    PesoKg?: number;
+    EstaturaCm?: number;
+    EsDiabetico?: boolean;
+  },
+): Promise<MessageResponse> {
+  return request<MessageResponse>(`/api/Pacientes/${id}/biometria`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function eliminarPaciente(id: string): Promise<void> {
+  return request<void>(`/api/Pacientes/${id}`, { method: 'DELETE' });
+}
+
+// ── Cuidadores ────────────────────────────────────────────
+
+export interface CuidadorResponse {
+  id: string;
+  nombre: string;
+  parentesco: string;
+  pacienteId?: string;
+}
+
+export interface CrearCuidadorPayload {
+  PacienteId: string;
+  Nombre: string;
+  Parentesco: string;
+  Telefono?: string;
+  Correo?: string;
+}
+
+export function getCuidadores(): Promise<CuidadorResponse[]> {
+  return request<CuidadorResponse[]>('/api/Cuidadores');
+}
+
+export function crearCuidador(payload: CrearCuidadorPayload): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/Cuidadores', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function actualizarCuidador(
+  id: string,
+  payload: { Nombre: string; Parentesco: string },
+): Promise<MessageResponse> {
+  return request<MessageResponse>(`/api/Cuidadores/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function eliminarCuidador(id: string): Promise<void> {
+  return request<void>(`/api/Cuidadores/${id}`, { method: 'DELETE' });
 }

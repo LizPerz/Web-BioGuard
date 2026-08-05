@@ -7,6 +7,35 @@
   flex-wrap: wrap;
 }
 
+.page-header__text {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.page-header__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-top: 2px;
+  border-radius: var(--radius-btn);
+  background: var(--bg-theme-btn);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.page-header__back:hover {
+  color: var(--text-primary);
+  border-color: var(--text-tertiary);
+  transform: translateX(-2px);
+}
+
 .page-header__title {
   font-size: 26px;
   font-weight: 800;

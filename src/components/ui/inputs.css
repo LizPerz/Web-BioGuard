@@ -46,7 +46,7 @@
 }
 
 .field__input:disabled {
-  background: #0A1422;
+  background: var(--bg-secondary);
   color: var(--text-disabled);
   cursor: not-allowed;
 }

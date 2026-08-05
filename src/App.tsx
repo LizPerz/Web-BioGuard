@@ -7,7 +7,7 @@ import { Verify2FA } from './pages/Verify2FA/Verify2FA';
 import { ResetPassword } from './pages/ResetPassword/ResetPassword';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { Health } from './pages/Health/Health';
-import { Security } from './pages/Security/Security';
+import { Pacientes } from './pages/Pacientes/Pacientes';
 import { Billing } from './pages/Billing/Billing';
 import { Settings } from './pages/Settings/Settings';
 
@@ -24,7 +24,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/health" element={<Health />} />
-        <Route path="/security" element={<Security />} />
+        <Route path="/pacientes" element={<Pacientes />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />

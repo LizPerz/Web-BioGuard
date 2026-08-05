@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutGrid, Heart, Lock, CreditCard, Settings, LogOut, Crown, X
+  LayoutGrid, Heart, Users, Settings, LogOut, Crown, X
 } from 'lucide-react';
 import { mockUser } from '../../data/mockData';
 import { getUser, getAccessToken, clearSession } from '../../lib/auth';
@@ -20,8 +20,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const navItems = [
     { path: '/dashboard', label: 'Panel', icon: LayoutGrid },
     { path: '/health', label: 'Salud', icon: Heart },
-    { path: '/security', label: 'Seguridad', icon: Lock },
-    { path: '/billing', label: 'Facturación', icon: CreditCard },
+    { path: '/pacientes', label: 'Pacientes y Cuidadores', icon: Users },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);

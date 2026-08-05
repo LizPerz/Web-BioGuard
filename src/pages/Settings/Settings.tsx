@@ -1,4 +1,4 @@
-import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X } from 'lucide-react';
+import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X, ReceiptText, Sun, Moon } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ContentCard } from '../../components/ui/ContentCard';
@@ -6,8 +6,9 @@ import { PrimaryButton, DangerButton, SecondaryButton } from '../../components/u
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
 import { mockUser } from '../../data/mockData';
 import { getUser } from '../../lib/auth';
+import { useTheme } from '../../lib/use-theme';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Settings.css';
 
 interface PasswordChecks {
@@ -20,6 +21,8 @@ interface PasswordChecks {
 
 export function Settings() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const session = getUser();
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
@@ -90,7 +93,38 @@ export function Settings() {
       <PageHeader
         title="Ajustes de Cuenta"
         subtitle={`Configuración de tu perfil · ${sessionName}`}
+        onBack={() => navigate('/dashboard')}
       />
+
+      <div className="settings__row settings__row--prefs">
+        <ContentCard className="settings__pref-card" onClick={() => navigate('/billing')}>
+          <div className="settings__pref-row">
+            <div className="settings__pref-icon">
+              <ReceiptText size={18} strokeWidth={1.8} />
+            </div>
+            <div className="settings__pref-text">
+              <h3 className="settings__card-title">Facturación</h3>
+              <p className="settings__pref-desc">Gestiona tu plan y suscripción</p>
+            </div>
+            <span className="settings__pref-arrow">→</span>
+          </div>
+        </ContentCard>
+
+        <ContentCard className="settings__pref-card">
+          <div className="settings__pref-row">
+            <div className="settings__pref-icon">
+              {theme === 'light' ? <Moon size={18} strokeWidth={1.8} /> : <Sun size={18} strokeWidth={1.8} />}
+            </div>
+            <div className="settings__pref-text">
+              <h3 className="settings__card-title">Apariencia</h3>
+              <p className="settings__pref-desc">Actualmente en modo {theme === 'light' ? 'claro' : 'oscuro'}</p>
+            </div>
+            <SecondaryButton onClick={toggleTheme}>
+              {theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
+            </SecondaryButton>
+          </div>
+        </ContentCard>
+      </div>
 
       <div className="settings__row settings__row--three">
         <ContentCard id="avatar" className="settings__avatar-card" style={{ scrollMarginTop: 88 }}>

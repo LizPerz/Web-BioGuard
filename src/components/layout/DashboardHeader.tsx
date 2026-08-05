@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Bell, User, ChevronDown, Menu, UserRound, Mail, LockKeyhole, TriangleAlert, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Bell, User, ChevronDown, Menu, UserRound, Mail, LockKeyhole, TriangleAlert, LogOut, ReceiptText, Sun, Moon } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { mockUser, pageTitles } from '../../data/mockData';
-import { useLocation } from 'react-router-dom';
 import { getUser, getAccessToken, clearSession } from '../../lib/auth';
 import { logout } from '../../lib/api';
+import { useTheme } from '../../lib/use-theme';
 import './dashboard-header.css';
 
 interface DashboardHeaderProps {
@@ -14,6 +14,7 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const currentTitle = pageTitles[location.pathname] || 'Panel Principal';
   const session = getUser();
@@ -37,6 +38,11 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
   const goTo = (hash: string) => {
     setMenuOpen(false);
     navigate(`/settings${hash}`);
+  };
+
+  const goToBilling = () => {
+    setMenuOpen(false);
+    navigate('/billing');
   };
 
   return (
@@ -95,10 +101,18 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
                   <LockKeyhole size={16} strokeWidth={1.8} />
                   Cambiar contraseña
                 </button>
-                <div className="dashboard-header__dropdown-divider" />
                 <button className="dashboard-header__dropdown-item dashboard-header__dropdown-item--danger" role="menuitem" onClick={() => goTo('#peligro')}>
                   <TriangleAlert size={16} strokeWidth={1.8} />
                   Eliminar cuenta
+                </button>
+                <div className="dashboard-header__dropdown-divider" />
+                <button className="dashboard-header__dropdown-item" role="menuitem" onClick={goToBilling}>
+                  <ReceiptText size={16} strokeWidth={1.8} />
+                  Facturación
+                </button>
+                <button className="dashboard-header__dropdown-item" role="menuitem" onClick={toggleTheme}>
+                  {theme === 'light' ? <Moon size={16} strokeWidth={1.8} /> : <Sun size={16} strokeWidth={1.8} />}
+                  {theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
                 </button>
                 <div className="dashboard-header__dropdown-divider" />
                 <button className="dashboard-header__dropdown-item" role="menuitem" onClick={handleLogout}>

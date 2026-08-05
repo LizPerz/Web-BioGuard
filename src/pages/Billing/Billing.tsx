@@ -8,13 +8,14 @@ import { StatusBadge } from '../../components/ui/badges';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PricingCard } from '../../components/pricing/PricingCard';
 import { subscriptionFeatures, plans } from '../../data/mockData';
-import { getPendingOnboarding, clearPendingOnboarding, updateSessionPlan } from '../../lib/auth';
+import { getUser, getPendingOnboarding, clearPendingOnboarding, updateSessionPlan } from '../../lib/auth';
 import './Billing.css';
 
 export function Billing() {
   const navigate = useNavigate();
   const iconSize = 16;
   const onboarding = getPendingOnboarding();
+  const session = getUser();
 
   if (onboarding) {
     return (
@@ -38,7 +39,7 @@ export function Billing() {
                 onSelect={() => {
                   updateSessionPlan(plan.name);
                   clearPendingOnboarding();
-                  navigate('/dashboard');
+                  navigate('/dashboard', { state: { crearPaciente: true } });
                 }}
               />
             ))}
@@ -53,6 +54,7 @@ export function Billing() {
       <PageHeader
         title="Centro de Facturación y Suscripción"
         subtitle="Gestiona tu plan, métodos de pago e historial de transacciones"
+        onBack={() => navigate('/dashboard')}
       />
 
       <div className="billing__row">
@@ -65,9 +67,9 @@ export function Billing() {
             <StatusBadge label="Activa" variant="success" />
           </div>
 
-          <div className="billing__plan-name">Plan Gratis</div>
-          <div className="billing__plan-price">Gratis</div>
-          <p className="billing__plan-desc">Acceso gratuito ilimitado</p>
+          <div className="billing__plan-name">Plan {session?.plan ?? 'Gratis'}</div>
+          <div className="billing__plan-price">{session?.plan === 'Gratis' || !session?.plan ? 'Gratis' : session?.plan === 'Familiar' ? '$10' : '$20'}</div>
+          <p className="billing__plan-desc">{session?.plan === 'Pro' ? 'Acceso a la consola IA y monitoreo avanzado' : 'Acceso gratuito ilimitado'}</p>
 
           <ul className="billing__features">
             {subscriptionFeatures.map((feat, i) => (

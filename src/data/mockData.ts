@@ -98,14 +98,13 @@ export const subscriptionFeatures = [
 export const navItems = [
   { path: '/dashboard', label: 'Panel', icon: 'LayoutGrid' },
   { path: '/health', label: 'Salud', icon: 'Heart' },
-  { path: '/security', label: 'Seguridad', icon: 'Lock' },
-  { path: '/billing', label: 'Facturación', icon: 'CreditCard' },
+  { path: '/pacientes', label: 'Pacientes y Cuidadores', icon: 'Users' },
 ] as const;
 
 export const pageTitles: Record<string, string> = {
   '/dashboard': 'Panel Principal',
   '/health': 'Análisis Clínico y Reportes',
-  '/security': 'Centro de Seguridad',
+  '/pacientes': 'Pacientes y Cuidadores',
   '/billing': 'Centro de Facturación',
   '/settings': 'Ajustes',
 };

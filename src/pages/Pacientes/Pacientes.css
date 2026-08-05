@@ -1,0 +1,217 @@
+.pacientes__row {
+  margin-bottom: 24px;
+}
+
+.pacientes__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.pacientes__card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pacientes__card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.pacientes__count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+}
+
+.pacientes__card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pacientes__loading {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+}
+
+.pacientes__patient-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.pacientes__patient-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  background: var(--icon-bg-security);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pacientes__patient-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pacientes__patient-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.pacientes__diabetic-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--danger);
+  background: var(--icon-bg-pulse);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+}
+
+.pacientes__patient-grid {
+  display: flex;
+  gap: 26px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.pacientes__stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.pacientes__stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.pacientes__stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-label);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.pacientes__caregiver-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.pacientes__caregiver {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.pacientes__caregiver-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--icon-bg-temp);
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pacientes__caregiver-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.pacientes__caregiver-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pacientes__caregiver-relation {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pacientes__caregiver-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.pacientes__icon-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-btn);
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pacientes__icon-btn:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.pacientes__icon-btn--danger:hover {
+  color: var(--danger);
+  background: rgba(227, 52, 68, 0.1);
+}
+
+.pacientes__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pacientes__check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .pacientes__card-actions {
+    flex-direction: column;
+  }
+  .pacientes__patient-info {
+    flex-direction: column;
+  }
+}
