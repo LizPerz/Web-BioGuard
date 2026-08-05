@@ -154,8 +154,8 @@ export function Pacientes() {
     try {
       const fn = tipo === 'paciente' ? getQrPaciente : getQrCuidador;
       const res = await fn(id);
-      const expira = new Date(res.CodigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
-      setQrCodigo(res.CodigoAccesoQr);
+      const expira = new Date(res.codigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
+      setQrCodigo(res.codigoAccesoQr ?? '');
       setQrRestante(Math.max(0, Math.round((expira.getTime() - Date.now()) / 1000)));
     } catch (err) {
       setQrError(errMsg(err));
@@ -172,8 +172,8 @@ export function Pacientes() {
     try {
       const fn = qrTarget.tipo === 'paciente' ? regenerarQrPaciente : regenerarQrCuidador;
       const res = await fn(qrTarget.id);
-      const expira = new Date(res.CodigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
-      setQrCodigo(res.CodigoAccesoQr);
+      const expira = new Date(res.codigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
+      setQrCodigo(res.codigoAccesoQr ?? '');
       setQrRestante(Math.max(0, Math.round((expira.getTime() - Date.now()) / 1000)));
       setQrMensaje('Se generó un nuevo código');
     } catch (err) {
@@ -627,7 +627,11 @@ export function Pacientes() {
           ) : (
             <>
               <div className="pacientes__qr-box">
-                <QRCodeSVG value={qrCodigo || 'BIOTEMP'} size={180} includeMargin={false} />
+                {qrCodigo ? (
+                  <QRCodeSVG value={qrCodigo} size={180} includeMargin={false} />
+                ) : (
+                  <span className="pacientes__qr-box-empty">—</span>
+                )}
               </div>
               <div className="pacientes__qr-code-block">
                 <span className="pacientes__qr-code-label">Código de acceso (escríbelo o escanéalo)</span>

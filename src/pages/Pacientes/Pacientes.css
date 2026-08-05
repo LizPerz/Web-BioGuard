@@ -275,10 +275,14 @@
   font-weight: 800;
   font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
   letter-spacing: 0.12em;
-  color: var(--text-primary);
+  color: #111827;
   cursor: pointer;
   width: 100%;
   justify-content: center;
+}
+
+.pacientes__qr-code span {
+  color: #111827;
 }
 
 .pacientes__qr-copy-hint {
