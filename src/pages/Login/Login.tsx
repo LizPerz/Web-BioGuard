@@ -6,7 +6,7 @@ import { PrimaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
 import { Eye, EyeOff } from 'lucide-react';
 import { loginWeb, ApiError } from '../../lib/api';
-import { saveSession, clearPendingOnboarding } from '../../lib/auth';
+import { saveSession, getPendingOnboarding } from '../../lib/auth';
 
 export function Login() {
   const navigate = useNavigate();
@@ -32,7 +32,6 @@ export function Login() {
         return;
       }
       if (result.token) {
-        clearPendingOnboarding();
         saveSession(
           result.token,
           result.refreshToken,
@@ -43,7 +42,7 @@ export function Login() {
             plan: result.plan ?? '',
           },
         );
-        navigate('/dashboard');
+        navigate(getPendingOnboarding() ? '/planes' : '/dashboard');
       }
     } catch (err) {
       if (err instanceof ApiError) {

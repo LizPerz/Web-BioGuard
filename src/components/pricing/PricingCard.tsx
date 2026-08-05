@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { PrimaryButton } from '../ui/buttons';
 import './pricing-card.css';
 
@@ -10,9 +10,11 @@ interface PricingCardProps {
   benefits: string[];
   recommended: boolean;
   onSelect?: () => void;
+  actionLabel?: string;
+  loading?: boolean;
 }
 
-export function PricingCard({ label, name, price, period, benefits, recommended, onSelect }: PricingCardProps) {
+export function PricingCard({ label, name, price, period, benefits, recommended, onSelect, actionLabel, loading }: PricingCardProps) {
   return (
     <div className={`pricing-card ${recommended ? 'pricing-card--recommended' : ''}`}>
       {recommended && (
@@ -37,8 +39,9 @@ export function PricingCard({ label, name, price, period, benefits, recommended,
         ))}
       </ul>
       <div className="pricing-card__action">
-        <PrimaryButton fullWidth onClick={onSelect}>
-          {price === 'Gratis' ? 'Comenzar gratis' : 'Seleccionar plan'}
+        <PrimaryButton fullWidth onClick={onSelect} disabled={loading}>
+          {loading && <Loader2 size={14} strokeWidth={2} className="pricing-card__spinner" />}
+          {actionLabel ?? (price === 'Gratis' ? 'Comenzar gratis' : 'Seleccionar plan')}
         </PrimaryButton>
       </div>
     </div>

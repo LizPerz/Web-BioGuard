@@ -103,6 +103,16 @@
   margin-top: auto;
 }
 
+.pricing-card__spinner {
+  animation: pricing-card-spin 1s linear infinite;
+}
+
+@keyframes pricing-card-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 640px) {
   .pricing-card {
     padding: 24px 28px 18px;

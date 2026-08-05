@@ -10,6 +10,7 @@ import { Health } from './pages/Health/Health';
 import { Reportes } from './pages/Reportes/Reportes';
 import { Pacientes } from './pages/Pacientes/Pacientes';
 import { Billing } from './pages/Billing/Billing';
+import { SelectPlan } from './pages/Plans/SelectPlan';
 import { Settings } from './pages/Settings/Settings';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/pacientes" element={<Pacientes />} />
         <Route path="/billing" element={<Billing />} />
+        <Route path="/planes" element={<SelectPlan />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
