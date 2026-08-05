@@ -197,6 +197,12 @@ export function subirFoto(payload: { FotoBase64: string }): Promise<MessageRespo
   });
 }
 
+export function eliminarFoto(): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/UsuariosWeb/mi-perfil/foto', {
+    method: 'DELETE',
+  });
+}
+
 export function cambiarPassword(payload: {
   PasswordActual: string;
   NuevaPassword: string;
@@ -325,4 +331,78 @@ export function actualizarCuidador(
 
 export function eliminarCuidador(id: string): Promise<void> {
   return request<void>(`/api/Cuidadores/${id}`, { method: 'DELETE' });
+}
+
+// ── QR / Códigos de acceso ────────────────────────────────
+
+export interface QrResponse {
+  CodigoAccesoQr: string;
+  CodigoExpira: string | null;
+}
+
+export function getQrPaciente(id: string): Promise<QrResponse> {
+  return request<QrResponse>(`/api/Pacientes/${id}/qr`);
+}
+
+export function regenerarQrPaciente(id: string): Promise<QrResponse> {
+  return request<QrResponse>(`/api/Pacientes/${id}/regenerar-qr`, { method: 'POST' });
+}
+
+export function getQrCuidador(id: string): Promise<QrResponse> {
+  return request<QrResponse>(`/api/Cuidadores/${id}/qr`);
+}
+
+export function regenerarQrCuidador(id: string): Promise<QrResponse> {
+  return request<QrResponse>(`/api/Cuidadores/${id}/regenerar-qr`, { method: 'POST' });
+}
+
+// ── Planes y Facturación ──────────────────────────────────
+
+export interface PlanResponse {
+  id: string;
+  nombre: string;
+  precio: number;
+  precioMoneda: string;
+  limitePacientes: number;
+  limiteCuidadores: number;
+  diasHistorial: number;
+  gpsContinuo: boolean;
+  aiConsole: boolean;
+  descripcion: string;
+}
+
+export interface PagoResponse {
+  id: string;
+  monto: number;
+  moneda: string;
+  estado: string;
+  fechaPago: string;
+  metodoPago: string;
+}
+
+export interface SimularPagoResponse {
+  PagoId?: string;
+  Monto?: number;
+  Moneda?: string;
+  Estado?: string;
+  message?: string;
+}
+
+export function getPlanes(): Promise<PlanResponse[]> {
+  return request<PlanResponse[]>('/api/Planes');
+}
+
+export function getMiPlan(): Promise<PlanResponse> {
+  return request<PlanResponse>('/api/UsuariosWeb/mi-plan');
+}
+
+export function simularPago(payload: { PlanNombre: string }): Promise<SimularPagoResponse> {
+  return request<SimularPagoResponse>('/api/Pagos/simular-pago', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getHistorialPagos(): Promise<PagoResponse[]> {
+  return request<PagoResponse[]>('/api/Pagos/historial');
 }

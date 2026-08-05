@@ -11,7 +11,8 @@ interface CrearPacienteModalProps {
   onCreated: () => void;
 }
 
-const soloLetras = (value: string) => value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/g, '');
+const soloLetras = (value: string) =>
+  value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ ]/g, '').replace(/\s+/g, ' ');
 
 export function CrearPacienteModal({ open, onClose, onCreated }: CrearPacienteModalProps) {
   const [nombre, setNombre] = useState('');

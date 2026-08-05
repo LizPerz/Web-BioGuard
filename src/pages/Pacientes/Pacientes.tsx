@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { UserRound, UserPlus, Pencil, Trash2, Users } from 'lucide-react';
+import { UserRound, UserPlus, Pencil, Trash2, Users, QrCode, RefreshCw, Copy, Check as CheckIcon, Loader2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { PrimaryButton, SecondaryButton, DangerButton } from '../../components/ui/buttons';
@@ -16,15 +17,19 @@ import {
   actualizarCuidador,
   eliminarCuidador as apiEliminarCuidador,
   actualizarPaciente,
-  actualizarBiometriaPaciente,
   eliminarPaciente as apiEliminarPaciente,
+  getQrPaciente,
+  regenerarQrPaciente,
+  getQrCuidador,
+  regenerarQrCuidador,
   ApiError,
   type PacienteResponse,
   type CuidadorResponse,
 } from '../../lib/api';
 import './Pacientes.css';
 
-const soloLetras = (value: string) => value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/g, '');
+const soloLetras = (value: string) =>
+  value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ ]/g, '').replace(/\s+/g, ' ');
 
 export function Pacientes() {
   const navigate = useNavigate();
@@ -39,10 +44,6 @@ export function Pacientes() {
   const [guardando, setGuardando] = useState(false);
 
   const [nombre, setNombre] = useState('');
-  const [edad, setEdad] = useState('');
-  const [peso, setPeso] = useState('');
-  const [estatura, setEstatura] = useState('');
-  const [esDiabetico, setEsDiabetico] = useState(false);
   const [errorPaciente, setErrorPaciente] = useState('');
 
   const [cuidadorOpen, setCuidadorOpen] = useState(false);
@@ -54,6 +55,15 @@ export function Pacientes() {
   const [cuidadorError, setCuidadorError] = useState('');
   const [cuidadorGuardando, setCuidadorGuardando] = useState(false);
   const [confirmEliminarCuidador, setConfirmEliminarCuidador] = useState<string | null>(null);
+
+  const [qrTarget, setQrTarget] = useState<{ tipo: 'paciente' | 'cuidador'; id: string; nombre: string } | null>(null);
+  const [qrCodigo, setQrCodigo] = useState('');
+  const [qrRestante, setQrRestante] = useState(0);
+  const [qrCargando, setQrCargando] = useState(false);
+  const [qrRegenerando, setQrRegenerando] = useState(false);
+  const [qrError, setQrError] = useState('');
+  const [qrMensaje, setQrMensaje] = useState('');
+  const [qrCopiado, setQrCopiado] = useState(false);
 
   const cargarTodo = useCallback(async () => {
     setLoading(true);
@@ -85,10 +95,6 @@ export function Pacientes() {
   const abrirEditar = () => {
     if (!paciente) return;
     setNombre(paciente.nombre);
-    setEdad(paciente.edad != null && paciente.edad > 0 ? String(paciente.edad) : '');
-    setPeso(paciente.pesoKg != null && paciente.pesoKg > 0 ? String(paciente.pesoKg) : '');
-    setEstatura(paciente.estaturaCm != null && paciente.estaturaCm > 0 ? String(paciente.estaturaCm) : '');
-    setEsDiabetico(paciente.esDiabetico ?? false);
     setErrorPaciente('');
     setEditarOpen(true);
   };
@@ -105,12 +111,6 @@ export function Pacientes() {
       if (nombre.trim() !== paciente.nombre) {
         await actualizarPaciente(paciente.id, { Nombre: nombre.trim() });
       }
-      await actualizarBiometriaPaciente(paciente.id, {
-        Edad: edad ? Number(edad) : undefined,
-        PesoKg: peso ? Number(peso) : undefined,
-        EstaturaCm: estatura ? Number(estatura) : undefined,
-        EsDiabetico: esDiabetico,
-      });
       setEditarOpen(false);
       await cargarTodo();
     } catch (err) {
@@ -134,6 +134,78 @@ export function Pacientes() {
       setGuardando(false);
     }
   };
+
+  const abrirQr = async (tipo: 'paciente' | 'cuidador', id: string, nombre: string) => {
+    setQrTarget({ tipo, id, nombre });
+    setQrCargando(true);
+    setQrError('');
+    setQrMensaje('');
+    setQrCopiado(false);
+    try {
+      const fn = tipo === 'paciente' ? getQrPaciente : getQrCuidador;
+      const res = await fn(id);
+      const expira = new Date(res.CodigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
+      setQrCodigo(res.CodigoAccesoQr);
+      setQrRestante(Math.max(0, Math.round((expira.getTime() - Date.now()) / 1000)));
+    } catch (err) {
+      setQrError(errMsg(err));
+    } finally {
+      setQrCargando(false);
+    }
+  };
+
+  const regenerarQr = async () => {
+    if (!qrTarget || qrRegenerando) return;
+    setQrRegenerando(true);
+    setQrError('');
+    setQrMensaje('');
+    try {
+      const fn = qrTarget.tipo === 'paciente' ? regenerarQrPaciente : regenerarQrCuidador;
+      const res = await fn(qrTarget.id);
+      const expira = new Date(res.CodigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
+      setQrCodigo(res.CodigoAccesoQr);
+      setQrRestante(Math.max(0, Math.round((expira.getTime() - Date.now()) / 1000)));
+      setQrMensaje('Se generó un nuevo código');
+    } catch (err) {
+      setQrError(errMsg(err));
+    } finally {
+      setQrRegenerando(false);
+    }
+  };
+
+  const copiarCodigo = async () => {
+    try {
+      await navigator.clipboard.writeText(qrCodigo);
+      setQrCopiado(true);
+      setTimeout(() => setQrCopiado(false), 2000);
+    } catch {
+      setQrCopiado(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!qrTarget) return;
+    const tick = setInterval(() => {
+      setQrRestante((r) => (r > 0 ? r - 1 : 0));
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [qrTarget]);
+
+  useEffect(() => {
+    if (qrTarget && qrRestante <= 0 && !qrCargando && !qrRegenerando) {
+      regenerarQr();
+    }
+  }, [qrRestante, qrTarget, qrCargando, qrRegenerando]);
+
+  const formatearRestante = (s: number) => {
+    const m = Math.floor(s / 60);
+    const seg = s % 60;
+    return `${m}:${String(seg).padStart(2, '0')}`;
+  };
+
+  function errMsg(err: unknown, fallback = 'Ocurrió un error inesperado. Intenta de nuevo.') {
+    return err instanceof ApiError ? err.message : fallback;
+  }
 
   const abrirNuevoCuidador = () => {
     setCuidadorEditId(null);
@@ -234,6 +306,10 @@ export function Pacientes() {
             </div>
             {paciente && (
               <div className="pacientes__card-actions">
+                <SecondaryButton onClick={() => abrirQr('paciente', paciente.id, paciente.nombre)}>
+                  <QrCode size={13} strokeWidth={1.8} />
+                  Código de acceso
+                </SecondaryButton>
                 <SecondaryButton onClick={abrirEditar}>
                   <Pencil size={13} strokeWidth={1.8} />
                   Editar
@@ -340,6 +416,14 @@ export function Pacientes() {
                   <div className="pacientes__caregiver-actions">
                     <button
                       className="pacientes__icon-btn"
+                      onClick={() => abrirQr('cuidador', c.id, c.nombre)}
+                      aria-label={`Código de acceso de ${c.nombre}`}
+                      title="Código de acceso"
+                    >
+                      <QrCode size={15} strokeWidth={1.8} />
+                    </button>
+                    <button
+                      className="pacientes__icon-btn"
                       onClick={() => abrirEditarCuidador(c)}
                       aria-label={`Editar a ${c.nombre}`}
                     >
@@ -370,7 +454,7 @@ export function Pacientes() {
         open={editarOpen}
         onClose={() => setEditarOpen(false)}
         title="Editar paciente"
-        subtitle="Actualiza los datos del paciente vinculado"
+        subtitle="Actualiza el nombre del paciente vinculado"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <TextInput
@@ -378,33 +462,8 @@ export function Pacientes() {
             name="editNombre"
             value={nombre}
             onChange={(e) => setNombre(soloLetras(e.target.value))}
+            placeholder="Nombre y apellido del paciente"
           />
-          <TextInput
-            label="Edad (años)"
-            name="editEdad"
-            value={edad}
-            onChange={(e) => setEdad(e.target.value.replace(/[^0-9]/g, ''))}
-          />
-          <TextInput
-            label="Peso (kg)"
-            name="editPeso"
-            value={peso}
-            onChange={(e) => setPeso(e.target.value.replace(/[^0-9.]/g, ''))}
-          />
-          <TextInput
-            label="Estatura (cm)"
-            name="editEstatura"
-            value={estatura}
-            onChange={(e) => setEstatura(e.target.value.replace(/[^0-9.]/g, ''))}
-          />
-          <label className="pacientes__check">
-            <input
-              type="checkbox"
-              checked={esDiabetico}
-              onChange={(e) => setEsDiabetico(e.target.checked)}
-            />
-            <span>¿Es diabético?</span>
-          </label>
           {errorPaciente && (
             <div className="modal__error" role="alert">
               {errorPaciente}
@@ -506,6 +565,72 @@ export function Pacientes() {
           <DangerButton type="button" onClick={eliminarCuidador} disabled={cuidadorGuardando}>
             {cuidadorGuardando ? 'Eliminando…' : 'Sí, eliminar'}
           </DangerButton>
+        </div>
+      </Modal>
+
+      <Modal
+        open={qrTarget !== null}
+        onClose={() => setQrTarget(null)}
+        title="Código de acceso"
+        subtitle={
+          qrTarget
+            ? `${qrTarget.tipo === 'paciente' ? 'Paciente' : 'Cuidador'}: ${qrTarget.nombre} · escanéalo con la App Móvil`
+            : 'Escanéalo con la App Móvil'
+        }
+      >
+        <div className="pacientes__qr">
+          {qrCargando ? (
+            <div className="pacientes__qr-loading">
+              <Loader2 size={22} strokeWidth={1.8} className="pacientes__spin" />
+              Cargando código…
+            </div>
+          ) : qrError ? (
+            <div className="modal__error" role="alert">
+              {qrError}
+            </div>
+          ) : (
+            <>
+              <div className="pacientes__qr-box">
+                <QRCodeSVG value={qrCodigo || 'BIOTEMP'} size={180} includeMargin={false} />
+              </div>
+              <div className="pacientes__qr-code" onClick={copiarCodigo} title="Copiar código">
+                <span>{qrCodigo || '—'}</span>
+                <button
+                  className="pacientes__icon-btn"
+                  onClick={copiarCodigo}
+                  aria-label="Copiar código"
+                >
+                  {qrCopiado ? <CheckIcon size={15} strokeWidth={1.8} /> : <Copy size={15} strokeWidth={1.8} />}
+                </button>
+              </div>
+              <p className="pacientes__qr-hint">
+                {qrCopiado ? '¡Código copiado!' : 'El código se renueva cada 5 minutos. Introdúcelo o escanéalo en la App Móvil para vincular este dispositivo.'}
+              </p>
+
+              <div className="pacientes__qr-timer">
+                <div className="pacientes__qr-timer-row">
+                  <Clock size={15} strokeWidth={1.8} />
+                  <span className={qrRestante <= 30 ? 'pacientes__qr-timer--warn' : ''}>
+                    {qrRestante > 0 ? `Nuevo código en ${formatearRestante(qrRestante)}` : 'Generando nuevo código…'}
+                  </span>
+                  {qrRegenerando && <Loader2 size={14} strokeWidth={1.8} className="pacientes__spin" />}
+                </div>
+                <div className="pacientes__qr-progress">
+                  <div
+                    className="pacientes__qr-progress-bar"
+                    style={{ width: `${Math.min(100, (qrRestante / 300) * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              {qrMensaje && <p className="pacientes__qr-msg">{qrMensaje}</p>}
+
+              <SecondaryButton fullWidth onClick={regenerarQr} disabled={qrRegenerando}>
+                <RefreshCw size={14} strokeWidth={1.8} />
+                {qrRegenerando ? 'Generando…' : 'Generar nuevo código'}
+              </SecondaryButton>
+            </>
+          )}
         </div>
       </Modal>
     </DashboardLayout>

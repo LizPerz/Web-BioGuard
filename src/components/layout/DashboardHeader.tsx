@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, User, ChevronDown, Menu, UserRound, Mail, LockKeyhole, TriangleAlert, LogOut, ReceiptText, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { mockUser, pageTitles } from '../../data/mockData';
-import { getUser, getAccessToken, clearSession } from '../../lib/auth';
-import { logout } from '../../lib/api';
+import { getUser, getAccessToken, clearSession, updateSessionUser } from '../../lib/auth';
+import { logout, getMiPerfil } from '../../lib/api';
 import { useTheme } from '../../lib/use-theme';
 import './dashboard-header.css';
 
@@ -18,8 +18,31 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const currentTitle = pageTitles[location.pathname] || 'Panel Principal';
   const session = getUser();
-  const displayName = session ? session.nombre : `${mockUser.firstName} ${mockUser.lastName}`.trim();
-  const planName = session ? session.plan : mockUser.plan;
+  const [foto, setFoto] = useState<string | null>(session?.fotoPerfil ?? null);
+  const [planNombre, setPlanNombre] = useState<string | null>(null);
+  const [displayNombre, setDisplayNombre] = useState<string | null>(null);
+  const displayName = displayNombre ?? (session ? session.nombre : `${mockUser.firstName} ${mockUser.lastName}`.trim());
+  const planName = planNombre ?? (session ? session.plan : mockUser.plan);
+
+  useEffect(() => {
+    let active = true;
+    getMiPerfil()
+      .then((perfil) => {
+        if (!active) return;
+        const completo = perfil.nombre ? `${perfil.nombre} ${perfil.apellidoPaterno ?? ''}`.trim() : perfil.nombre;
+        updateSessionUser({
+          nombre: completo,
+          correo: perfil.correo,
+          fotoPerfil: perfil.fotoPerfil ?? null,
+          plan: perfil.plan ?? '',
+        });
+        setFoto(perfil.fotoPerfil ?? null);
+        setDisplayNombre(completo);
+        setPlanNombre(perfil.plan ?? '');
+      })
+      .catch(() => { /* se conservan los valores actuales de la sesión */ });
+    return () => { active = false; };
+  }, []);
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -76,8 +99,8 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
             aria-expanded={menuOpen}
           >
             <div className="dashboard-header__avatar">
-              {session?.fotoPerfil
-                ? <img src={session.fotoPerfil} alt="Foto de perfil" className="dashboard-header__avatar-img" />
+              {foto
+                ? <img src={foto} alt="Foto de perfil" className="dashboard-header__avatar-img" />
                 : <User size={17} strokeWidth={1.8} />}
             </div>
             <span className="dashboard-header__name">{displayName}</span>

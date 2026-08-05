@@ -4,8 +4,18 @@ import { AuthLayout } from '../../components/auth/AuthLayout';
 import { AuthCard } from '../../components/auth/AuthCard';
 import { PrimaryButton } from '../../components/ui/buttons';
 import { PasswordInput } from '../../components/ui/inputs';
-import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { Eye, EyeOff, Check, X, CheckCircle2 } from 'lucide-react';
 import { resetPassword, ApiError } from '../../lib/api';
+
+const detectarMovil = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const ua =
+    navigator.userAgent ||
+    navigator.vendor ||
+    (window as unknown as { opera?: string }).opera ||
+    '';
+  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
+};
 
 interface PasswordChecks {
   minLength: boolean;
@@ -27,6 +37,7 @@ export function ResetPassword() {
   const [formError, setFormError] = useState('');
   const [passError, setPassError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [esMovil] = useState(detectarMovil);
 
   const checks: PasswordChecks = {
     minLength: password.length >= 8,
@@ -75,6 +86,37 @@ export function ResetPassword() {
         <AuthCard title="Enlace Inválido" subtitle="El enlace de recuperación es inválido o está incompleto" maxWidth={440}>
           <div style={{ textAlign: 'center' }}>
             <Link to="/forgot-password" style={{ fontWeight: 600 }}>Solicitar un nuevo enlace</Link>
+          </div>
+        </AuthCard>
+      </AuthLayout>
+    );
+  }
+
+  if (esMovil) {
+    return (
+      <AuthLayout>
+        <AuthCard
+          title="Cambia tu contraseña"
+          subtitle="Abriste el enlace en tu teléfono"
+          maxWidth={440}
+          footer={
+            <p>
+              ¿Recordaste tu contraseña?{' '}
+              <Link to="/login">Inicia sesión</Link>
+            </p>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', marginBottom: 16 }}>
+              <CheckCircle2 size={32} strokeWidth={2.2} />
+            </div>
+            <p style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
+              Ahora puedes cambiar tu contraseña
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              Abre la aplicación BioGuard en tu teléfono y dirígete a la sección de
+              recuperación de contraseña para completar el cambio.
+            </p>
           </div>
         </AuthCard>
       </AuthLayout>
