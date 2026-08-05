@@ -268,9 +268,9 @@
   align-items: center;
   gap: 10px;
   background: #fff;
-  border: 2px dashed rgba(45, 134, 255, 0.45);
+  border: 1px solid rgba(45, 134, 255, 0.28);
   border-radius: var(--radius-btn);
-  padding: 12px 14px 12px 18px;
+  padding: 8px 12px 8px 16px;
   font-size: 27px;
   font-weight: 800;
   font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;

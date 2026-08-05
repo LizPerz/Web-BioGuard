@@ -184,6 +184,7 @@ export function Pacientes() {
   };
 
   const copiarCodigo = async () => {
+    if (!qrCodigo) return;
     try {
       await navigator.clipboard.writeText(qrCodigo);
       setQrCopiado(true);
