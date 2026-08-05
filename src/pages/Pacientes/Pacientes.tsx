@@ -24,6 +24,8 @@ import {
 } from '../../lib/api';
 import './Pacientes.css';
 
+const soloLetras = (value: string) => value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/g, '');
+
 export function Pacientes() {
   const navigate = useNavigate();
   const [paciente, setPaciente] = useState<PacienteResponse | null>(null);
@@ -375,7 +377,7 @@ export function Pacientes() {
             label="Nombre completo"
             name="editNombre"
             value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
+            onChange={(e) => setNombre(soloLetras(e.target.value))}
           />
           <TextInput
             label="Edad (años)"
@@ -450,14 +452,14 @@ export function Pacientes() {
             label="Nombre"
             name="cuidadorNombre"
             value={cuidadorNombre}
-            onChange={(e) => setCuidadorNombre(e.target.value)}
+            onChange={(e) => setCuidadorNombre(soloLetras(e.target.value))}
             placeholder="Nombre completo"
           />
           <TextInput
             label="Parentesco"
             name="cuidadorParentesco"
             value={cuidadorParentesco}
-            onChange={(e) => setCuidadorParentesco(e.target.value)}
+            onChange={(e) => setCuidadorParentesco(soloLetras(e.target.value))}
             placeholder="Ej. Hijo, Esposa, Enfermero…"
           />
           <TextInput

@@ -49,14 +49,14 @@
 }
 
 .dashboard-header__logo-img {
-  height: 48px;
+  height: 64px;
   width: auto;
   display: block;
   filter: drop-shadow(0 0 12px rgba(8, 216, 242, 0.3));
 }
 
 .dashboard-header__logo-text {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   font-style: italic;
   color: var(--text-primary);
@@ -219,10 +219,10 @@
     font-size: 12px;
   }
   .dashboard-header__logo-img {
-    height: 38px;
+    height: 50px;
   }
   .dashboard-header__logo-text {
-    font-size: 17px;
+    font-size: 20px;
   }
   .dashboard-header__name {
     display: none;
