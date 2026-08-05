@@ -30,9 +30,19 @@ interface FeatureItem {
 const featuresDe = (p: PlanResponse): FeatureItem[] => [
   { label: 'Pacientes incluidos', value: String(p.limitePacientes) },
   { label: 'Cuidadores permitidos', value: String(p.limiteCuidadores) },
+  { label: 'Reporte diario', value: 'Incluido' },
   { label: 'Historial de datos', value: `${p.diasHistorial} días` },
   { label: 'GPS Continuo', value: p.gpsContinuo ? 'Incluido' : 'No incluido' },
   { label: 'Consola IA', value: p.aiConsole ? 'Incluida' : 'No incluida' },
+];
+
+const beneficiosDe = (p: PlanResponse): string[] => [
+  `${p.limitePacientes} paciente${p.limitePacientes === 1 ? '' : 's'}`,
+  `${p.limiteCuidadores} cuidador${p.limiteCuidadores === 1 ? '' : 'es'}`,
+  'Reporte diario',
+  `Historial ${p.diasHistorial} días`,
+  p.gpsContinuo ? 'GPS continuo' : 'Sin GPS continuo',
+  p.aiConsole ? 'Consola IA' : 'Sin Consola IA',
 ];
 
 const precioTexto = (p: PlanResponse) =>
@@ -438,13 +448,20 @@ function ModalPago({
         <div className="billing__selector">
           {planes.map((plan) => (
             <button key={plan.id} className="billing__selector-item" onClick={() => onSelectPlan(plan)}>
-              <div className="billing__selector-name">
-                <span className="billing__selector-plan">{plan.nombre}</span>
-                <span className="billing__selector-feat">
-                  {plan.limitePacientes} paciente{plan.limitePacientes === 1 ? '' : 's'} · {plan.limiteCuidadores} cuidador{plan.limiteCuidadores === 1 ? '' : 'es'} · {plan.diasHistorial} días
-                </span>
+              <div className="billing__selector-main">
+                <div className="billing__selector-name">
+                  <span className="billing__selector-plan">{plan.nombre}</span>
+                  <span className="billing__selector-price">{precioTexto(plan)}</span>
+                </div>
+                <ul className="billing__selector-benefits">
+                  {beneficiosDe(plan).map((b, i) => (
+                    <li key={i}>
+                      <Check size={13} strokeWidth={2.4} />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <span className="billing__selector-price">{precioTexto(plan)}</span>
             </button>
           ))}
         </div>

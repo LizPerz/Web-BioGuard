@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutGrid, Heart, Users, Settings, LogOut, Crown, X
+  LayoutGrid, Heart, FileBarChart2, Users, Settings, LogOut, Crown, X
 } from 'lucide-react';
 import { mockUser } from '../../data/mockData';
 import { getUser, getAccessToken, clearSession } from '../../lib/auth';
@@ -20,6 +20,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const navItems = [
     { path: '/dashboard', label: 'Panel', icon: LayoutGrid },
     { path: '/health', label: 'Salud', icon: Heart },
+    { path: '/reportes', label: 'Reportes', icon: FileBarChart2 },
     { path: '/pacientes', label: 'Pacientes y Cuidadores', icon: Users },
   ];
 

@@ -128,10 +128,6 @@
 }
 
 .billing__selector-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   width: 100%;
   padding: 14px 16px;
   border: 1px solid var(--border-main);
@@ -147,10 +143,18 @@
   background: var(--bg-secondary);
 }
 
-.billing__selector-name {
+.billing__selector-main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
+  width: 100%;
+}
+
+.billing__selector-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .billing__selector-plan {
@@ -159,9 +163,27 @@
   color: var(--text-primary);
 }
 
-.billing__selector-feat {
+.billing__selector-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.billing__selector-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.billing__selector-benefits li svg {
+  color: var(--success);
+  flex-shrink: 0;
 }
 
 .billing__selector-price {

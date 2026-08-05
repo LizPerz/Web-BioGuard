@@ -34,7 +34,8 @@ export const plans: Plan[] = [
     benefits: [
       '1 paciente',
       '2 cuidadores',
-      'Historial 30 días',
+      'Reporte diario',
+      'Historial 7 días',
       'Alertas inteligentes',
     ],
     recommended: false,
@@ -47,7 +48,8 @@ export const plans: Plan[] = [
     yearlyPrice: '$8',
     benefits: [
       '1 paciente',
-      '3 cuidadores',
+      '4 cuidadores',
+      'Reporte diario',
       'Historial 15 días',
       'Alertas inteligentes',
     ],
@@ -62,6 +64,7 @@ export const plans: Plan[] = [
     benefits: [
       '1 paciente',
       '6 cuidadores',
+      'Reporte diario',
       'Historial 30 días',
       'GPS continuo',
       'Consola IA',
@@ -104,6 +107,7 @@ export const navItems = [
 export const pageTitles: Record<string, string> = {
   '/dashboard': 'Panel Principal',
   '/health': 'Análisis Clínico y Reportes',
+  '/reportes': 'Reportes de Salud',
   '/pacientes': 'Pacientes y Cuidadores',
   '/billing': 'Centro de Facturación',
   '/settings': 'Ajustes',

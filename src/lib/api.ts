@@ -424,3 +424,51 @@ export function simularPago(payload: { PlanNombre: string }): Promise<SimularPag
 export function getHistorialPagos(): Promise<PagoResponse[]> {
   return request<PagoResponse[]>('/api/Pagos/historial');
 }
+
+// ── Reportes ─────────────────────────────────────────────
+
+export interface LecturaResponse {
+  id: string;
+  pulsoBpm: number;
+  temperaturaC: number;
+  sudoracionGsr: number;
+  probabilidadPico: number;
+  timestamp: string;
+}
+
+export interface EventoResponse {
+  id: string;
+  nivelRiesgo: string;
+  probabilidadMl: number;
+  descripcion: string;
+  fechaEvento: string;
+  atendida: boolean;
+}
+
+export interface AlertaResponse {
+  id: string;
+  tipo: string;
+  nivel: string;
+  titulo: string;
+  mensaje: string;
+  atendida: boolean;
+  fechaCreacion: string;
+  fechaAtencion?: string | null;
+}
+
+export function getLecturasRango(
+  pacienteId: string,
+  desde: string,
+  hasta: string,
+): Promise<LecturaResponse[]> {
+  const params = new URLSearchParams({ desde, hasta });
+  return request<LecturaResponse[]>(`/api/Sensores/lecturas/${pacienteId}/rango?${params.toString()}`);
+}
+
+export function getEventos(pacienteId: string, limite = 500): Promise<EventoResponse[]> {
+  return request<EventoResponse[]>(`/api/Sensores/eventos/${pacienteId}?limite=${limite}`);
+}
+
+export function getHistorialAlertas(pacienteId: string, limite = 500): Promise<AlertaResponse[]> {
+  return request<AlertaResponse[]>(`/api/Reportes/historial-alertas/${pacienteId}?limite=${limite}`);
+}
