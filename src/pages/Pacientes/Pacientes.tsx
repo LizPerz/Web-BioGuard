@@ -628,18 +628,24 @@ export function Pacientes() {
               <div className="pacientes__qr-box">
                 <QRCodeSVG value={qrCodigo || 'BIOTEMP'} size={180} includeMargin={false} />
               </div>
-              <div className="pacientes__qr-code" onClick={copiarCodigo} title="Copiar código">
-                <span>{qrCodigo || '—'}</span>
-                <button
-                  className="pacientes__icon-btn"
-                  onClick={copiarCodigo}
-                  aria-label="Copiar código"
-                >
-                  {qrCopiado ? <CheckIcon size={15} strokeWidth={1.8} /> : <Copy size={15} strokeWidth={1.8} />}
-                </button>
+              <div className="pacientes__qr-code-block">
+                <span className="pacientes__qr-code-label">Código de acceso (escríbelo o escanéalo)</span>
+                <div className="pacientes__qr-code" onClick={copiarCodigo} title="Copiar código">
+                  <span>{qrCodigo ? qrCodigo.replace(/(\d{4})(?=\d)/g, '$1 ') : '—'}</span>
+                  <button
+                    className="pacientes__icon-btn"
+                    onClick={copiarCodigo}
+                    aria-label="Copiar código"
+                  >
+                    {qrCopiado ? <CheckIcon size={15} strokeWidth={1.8} /> : <Copy size={15} strokeWidth={1.8} />}
+                  </button>
+                </div>
+                <p className="pacientes__qr-copy-hint">
+                  {qrCopiado ? '¡Código copiado! Puedes compartirlo o escribirlo en la App Móvil.' : 'Toca el código para copiarlo. No necesitas escanear: puedes escribir los 8 dígitos en la App Móvil.'}
+                </p>
               </div>
               <p className="pacientes__qr-hint">
-                {qrCopiado ? '¡Código copiado!' : 'El código se renueva cada 5 minutos. Introdúcelo o escanéalo en la App Móvil para vincular este dispositivo.'}
+                El código se renueva cada 5 minutos. Introdúcelo o escanéalo en la App Móvil para vincular este dispositivo.
               </p>
 
               <div className="pacientes__qr-timer">
