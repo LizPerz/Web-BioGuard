@@ -354,8 +354,8 @@ export function eliminarCuidador(id: string): Promise<void> {
 // ── QR / Códigos de acceso ────────────────────────────────
 
 export interface QrResponse {
-  CodigoAccesoQr: string;
-  CodigoExpira: string | null;
+  codigoAccesoQr: string;
+  codigoExpira: string | null;
 }
 
 export function getQrPaciente(id: string): Promise<QrResponse> {
