@@ -1,4 +1,4 @@
-import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X, ReceiptText, Sun, Moon, Loader2 } from 'lucide-react';
+import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X, ReceiptText, Sun, Moon, Loader2, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ContentCard } from '../../components/ui/ContentCard';
@@ -13,6 +13,7 @@ import {
   actualizarPerfil,
   cambiarCorreo,
   subirFoto,
+  eliminarFoto,
   cambiarPassword,
   eliminarMiCuenta,
   ApiError,
@@ -256,6 +257,21 @@ export function Settings() {
     reader.readAsDataURL(file);
   };
 
+  const eliminarFotoPerfil = async () => {
+    setSavingFoto(true);
+    setFotoFeed({ status: 'idle', message: '' });
+    try {
+      await eliminarFoto();
+      setFotoPerfil(null);
+      updateSessionUser({ fotoPerfil: null });
+      setFotoFeed({ status: 'success', message: 'Foto eliminada correctamente' });
+    } catch (err) {
+      setFotoFeed({ status: 'error', message: errMsg(err) });
+    } finally {
+      setSavingFoto(false);
+    }
+  };
+
   const guardarPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSavePass) {
@@ -350,6 +366,12 @@ export function Settings() {
             {savingFoto ? <Loader2 size={14} strokeWidth={1.8} className="settings__spin" /> : <Camera size={14} strokeWidth={1.8} />}
             {savingFoto ? 'Subiendo…' : 'Cambiar foto'}
           </SecondaryButton>
+          {fotoPerfil && (
+            <SecondaryButton fullWidth onClick={eliminarFotoPerfil} disabled={savingFoto || loadingProfile} style={{ marginTop: 10 }}>
+              <Trash2 size={14} strokeWidth={1.8} />
+              Eliminar foto
+            </SecondaryButton>
+          )}
           <div style={{ marginTop: 10 }}>
             <Feedback {...fotoFeed} />
           </div>
