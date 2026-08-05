@@ -76,7 +76,9 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
             aria-expanded={menuOpen}
           >
             <div className="dashboard-header__avatar">
-              <User size={17} strokeWidth={1.8} />
+              {session?.fotoPerfil
+                ? <img src={session.fotoPerfil} alt="Foto de perfil" className="dashboard-header__avatar-img" />
+                : <User size={17} strokeWidth={1.8} />}
             </div>
             <span className="dashboard-header__name">{displayName}</span>
             <ChevronDown size={14} strokeWidth={1.8} className="dashboard-header__chevron" />
