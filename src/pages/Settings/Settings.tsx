@@ -2,6 +2,7 @@ import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X, 
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ContentCard } from '../../components/ui/ContentCard';
+import { Modal } from '../../components/ui/Modal';
 import { PrimaryButton, DangerButton, SecondaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
 import { getUser, updateSessionUser, clearSession } from '../../lib/auth';
@@ -95,6 +96,7 @@ export function Settings() {
   const [savingFoto, setSavingFoto] = useState(false);
   const [savingPass, setSavingPass] = useState(false);
   const [savingDelete, setSavingDelete] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -292,15 +294,18 @@ export function Settings() {
     }
   };
 
-  const eliminarCuenta = async () => {
-    const ok = window.confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción es permanente y no se puede deshacer. Perderás todos tus datos, pacientes y configuración.');
-    if (!ok) return;
+  const eliminarCuenta = () => {
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmarEliminarCuenta = async () => {
     setSavingDelete(true);
     try {
       await eliminarMiCuenta();
       clearSession();
       navigate('/login');
     } catch (err) {
+      setConfirmDeleteOpen(false);
       window.alert(errMsg(err, 'No se pudo eliminar la cuenta. Intenta de nuevo.'));
       setSavingDelete(false);
     }
@@ -498,6 +503,26 @@ export function Settings() {
           </div>
         </ContentCard>
       </div>
+
+      <Modal
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        title="Eliminar tu perfil"
+        subtitle="Esta acción es permanente y no se puede deshacer"
+      >
+        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 13.5, lineHeight: 1.55 }}>
+          ¿Estás seguro de que quieres eliminar tu perfil? Se borrarán permanentemente tu cuenta,
+          tus datos personales, pacientes, cuidadores, lecturas, eventos y configuración.
+        </p>
+        <div className="modal__actions">
+          <SecondaryButton type="button" onClick={() => setConfirmDeleteOpen(false)} disabled={savingDelete}>
+            Cancelar
+          </SecondaryButton>
+          <DangerButton type="button" onClick={confirmarEliminarCuenta} disabled={savingDelete}>
+            {savingDelete ? 'Eliminando…' : 'Sí, eliminar mi perfil'}
+          </DangerButton>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }
