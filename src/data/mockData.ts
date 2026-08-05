@@ -33,7 +33,7 @@ export const plans: Plan[] = [
     yearlyPrice: 'Gratis',
     benefits: [
       '1 paciente',
-      '0 cuidadores',
+      '2 cuidadores',
       'Historial 30 días',
       'Alertas inteligentes',
     ],

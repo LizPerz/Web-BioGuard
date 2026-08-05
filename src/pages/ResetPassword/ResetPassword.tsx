@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { AuthCard } from '../../components/auth/AuthCard';
 import { PrimaryButton } from '../../components/ui/buttons';
 import { PasswordInput } from '../../components/ui/inputs';
 import { Eye, EyeOff, Check, X, CheckCircle2 } from 'lucide-react';
-import { resetPassword, ApiError } from '../../lib/api';
+import { resetPassword, marcarResetAbierto, ApiError } from '../../lib/api';
 
 const detectarMovil = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -30,6 +30,7 @@ export function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
+  const requestId = searchParams.get('requestId') ?? '';
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState('');
@@ -38,6 +39,14 @@ export function ResetPassword() {
   const [passError, setPassError] = useState('');
   const [loading, setLoading] = useState(false);
   const [esMovil] = useState(detectarMovil);
+
+  useEffect(() => {
+    if (esMovil && requestId) {
+      marcarResetAbierto({ RequestId: requestId }).catch(() => {
+        // Si la solicitud ya no existe, se ignora
+      });
+    }
+  }, [esMovil, requestId]);
 
   const checks: PasswordChecks = {
     minLength: password.length >= 8,
@@ -111,11 +120,11 @@ export function ResetPassword() {
               <CheckCircle2 size={32} strokeWidth={2.2} />
             </div>
             <p style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
-              Ahora puedes cambiar tu contraseña
+              ¡Enlace confirmado!
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              Abre la aplicación BioGuard en tu teléfono y dirígete a la sección de
-              recuperación de contraseña para completar el cambio.
+              Vuelve a la computadora donde iniciaste la recuperación. Ahí verás el formulario
+              para restablecer tu contraseña.
             </p>
           </div>
         </AuthCard>
