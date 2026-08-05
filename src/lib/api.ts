@@ -155,6 +155,64 @@ export function logout(token: string): Promise<MessageResponse> {
   });
 }
 
+// ── Usuario Web / Perfil ────────────────────────────────
+
+export interface MiPerfilResponse {
+  id: string;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  correo: string;
+  fechaRegistro?: string;
+  plan?: string;
+  fotoPerfil?: string | null;
+}
+
+export function getMiPerfil(): Promise<MiPerfilResponse> {
+  return request<MiPerfilResponse>('/api/UsuariosWeb/mi-perfil');
+}
+
+export function actualizarPerfil(payload: {
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+}): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/UsuariosWeb/mi-perfil', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function cambiarCorreo(payload: { NuevoCorreo: string }): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/UsuariosWeb/mi-perfil/correo', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function subirFoto(payload: { FotoBase64: string }): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/UsuariosWeb/mi-perfil/foto', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function cambiarPassword(payload: {
+  PasswordActual: string;
+  NuevaPassword: string;
+}): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/Auth/cambiar-password', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function eliminarMiCuenta(): Promise<void> {
+  return request<void>('/api/UsuariosWeb/mi-cuenta', {
+    method: 'DELETE',
+  });
+}
+
 // ── Pacientes ─────────────────────────────────────────────
 
 export interface PacienteResponse {

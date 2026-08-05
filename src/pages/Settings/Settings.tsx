@@ -1,14 +1,22 @@
-import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X, ReceiptText, Sun, Moon } from 'lucide-react';
+import { Camera, User, Mail, LockKeyhole, TriangleAlert, Eye, EyeOff, Check, X, ReceiptText, Sun, Moon, Loader2 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ContentCard } from '../../components/ui/ContentCard';
 import { PrimaryButton, DangerButton, SecondaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
-import { mockUser } from '../../data/mockData';
-import { getUser } from '../../lib/auth';
+import { getUser, updateSessionUser, clearSession } from '../../lib/auth';
 import { useTheme } from '../../lib/use-theme';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  getMiPerfil,
+  actualizarPerfil,
+  cambiarCorreo,
+  subirFoto,
+  cambiarPassword,
+  eliminarMiCuenta,
+  ApiError,
+} from '../../lib/api';
 import './Settings.css';
 
 interface PasswordChecks {
@@ -20,6 +28,44 @@ interface PasswordChecks {
   noSpaces: boolean;
 }
 
+type SectionStatus = 'idle' | 'success' | 'error';
+
+interface SectionFeedback {
+  status: SectionStatus;
+  message: string;
+}
+
+const feedbackStyles: Record<SectionStatus, React.CSSProperties> = {
+  idle: {},
+  success: {
+    marginBottom: 14,
+    padding: '10px 14px',
+    borderRadius: 8,
+    background: 'rgba(22, 163, 74, 0.12)',
+    border: '1px solid rgba(22, 163, 74, 0.35)',
+    color: 'var(--success, #16a34a)',
+    fontSize: 13,
+  },
+  error: {
+    marginBottom: 14,
+    padding: '10px 14px',
+    borderRadius: 8,
+    background: 'rgba(220, 38, 38, 0.12)',
+    border: '1px solid rgba(220, 38, 38, 0.35)',
+    color: 'var(--danger, #dc2626)',
+    fontSize: 13,
+  },
+};
+
+function errMsg(err: unknown, fallback = 'Ocurrió un error inesperado. Intenta de nuevo.') {
+  return err instanceof ApiError ? err.message : fallback;
+}
+
+function Feedback({ status, message }: SectionFeedback) {
+  if (status === 'idle' || !message) return null;
+  return <div style={feedbackStyles[status]}>{message}</div>;
+}
+
 export function Settings() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,14 +74,55 @@ export function Settings() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
 
-  const sessionName = session?.nombre ?? `${mockUser.firstName} ${mockUser.lastName}`.trim();
-
-  const [firstName, setFirstName] = useState(session?.nombre ?? mockUser.firstName);
-  const [lastName, setLastName] = useState(mockUser.lastName);
-  const [maternalLastName, setMaternalLastName] = useState(mockUser.maternalLastName);
+  const [firstName, setFirstName] = useState(session?.nombre?.split(' ')[0] ?? '');
+  const [lastName, setLastName] = useState('');
+  const [maternalLastName, setMaternalLastName] = useState('');
+  const [currentEmail, setCurrentEmail] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [fotoPerfil, setFotoPerfil] = useState<string | null>(session?.fotoPerfil ?? null);
   const [currentPass, setCurrentPass] = useState('');
   const [newPass, setNewPass] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  const [perfilFeed, setPerfilFeed] = useState<SectionFeedback>({ status: 'idle', message: '' });
+  const [correoFeed, setCorreoFeed] = useState<SectionFeedback>({ status: 'idle', message: '' });
+  const [fotoFeed, setFotoFeed] = useState<SectionFeedback>({ status: 'idle', message: '' });
+  const [passFeed, setPassFeed] = useState<SectionFeedback>({ status: 'idle', message: '' });
+
+  const [savingPerfil, setSavingPerfil] = useState(false);
+  const [savingCorreo, setSavingCorreo] = useState(false);
+  const [savingFoto, setSavingFoto] = useState(false);
+  const [savingPass, setSavingPass] = useState(false);
+  const [savingDelete, setSavingDelete] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sessionName = session?.nombre || `${firstName} ${lastName}`.trim() || 'Mi cuenta';
+
+  useEffect(() => {
+    let active = true;
+    getMiPerfil()
+      .then((perfil) => {
+        if (!active) return;
+        const nombre = perfil.nombre ?? '';
+        const apellido = perfil.apellidoPaterno ?? '';
+        setFirstName(nombre.split(' ')[0] ?? '');
+        setLastName(apellido);
+        setMaternalLastName(perfil.apellidoMaterno ?? '');
+        setCurrentEmail(perfil.correo ?? '');
+        setFotoPerfil(perfil.fotoPerfil ?? null);
+        updateSessionUser({
+          nombre: `${nombre} ${apellido}`.trim(),
+          correo: perfil.correo,
+          fotoPerfil: perfil.fotoPerfil ?? null,
+        });
+      })
+      .catch(() => { /* si no hay sesión válida, se dejan los valores actuales */ })
+      .finally(() => {
+        if (active) setLoadingProfile(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (location.hash) {
@@ -81,6 +168,7 @@ export function Settings() {
   };
 
   const allPassChecks = Object.values(passChecks).every(Boolean);
+  const canSavePass = allPassChecks && currentPass.length > 0 && newPass.length >= 8;
 
   const passCheckItems: { key: keyof PasswordChecks; label: string }[] = [
     { key: 'minLength', label: 'Mínimo 8 caracteres' },
@@ -90,6 +178,117 @@ export function Settings() {
     { key: 'hasSymbol', label: 'Al menos un símbolo' },
     { key: 'noSpaces', label: 'Sin espacios' },
   ];
+
+  const guardarPerfil = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName.trim() || !lastName.trim()) {
+      setPerfilFeed({ status: 'error', message: 'Nombre y apellido paterno son obligatorios' });
+      return;
+    }
+    setSavingPerfil(true);
+    setPerfilFeed({ status: 'idle', message: '' });
+    try {
+      await actualizarPerfil({
+        Nombre: firstName.trim(),
+        ApellidoPaterno: lastName.trim(),
+        ApellidoMaterno: maternalLastName.trim(),
+      });
+      const nombreCompleto = `${firstName.trim()} ${lastName.trim()}`.trim();
+      updateSessionUser({ nombre: nombreCompleto });
+      setPerfilFeed({ status: 'success', message: 'Perfil actualizado correctamente' });
+    } catch (err) {
+      setPerfilFeed({ status: 'error', message: errMsg(err) });
+    } finally {
+      setSavingPerfil(false);
+    }
+  };
+
+  const guardarCorreo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail.trim()) return;
+    setSavingCorreo(true);
+    setCorreoFeed({ status: 'idle', message: '' });
+    try {
+      await cambiarCorreo({ NuevoCorreo: newEmail.trim() });
+      const correoNuevo = newEmail.trim();
+      setCurrentEmail(correoNuevo);
+      setNewEmail('');
+      updateSessionUser({ correo: correoNuevo });
+      setCorreoFeed({ status: 'success', message: 'Correo actualizado correctamente' });
+    } catch (err) {
+      setCorreoFeed({ status: 'error', message: errMsg(err) });
+    } finally {
+      setSavingCorreo(false);
+    }
+  };
+
+  const handleFotoClick = () => fileInputRef.current?.click();
+
+  const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setFotoFeed({ status: 'error', message: 'Solo se permiten imágenes (JPG, PNG, WEBP…)' });
+      return;
+    }
+    if (file.size > 900 * 1024) {
+      setFotoFeed({ status: 'error', message: 'La imagen es demasiado grande (máx. 900 KB)' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = String(reader.result);
+      setSavingFoto(true);
+      setFotoFeed({ status: 'idle', message: '' });
+      try {
+        await subirFoto({ FotoBase64: base64 });
+        setFotoPerfil(base64);
+        updateSessionUser({ fotoPerfil: base64 });
+        setFotoFeed({ status: 'success', message: 'Foto actualizada correctamente' });
+      } catch (err) {
+        setFotoFeed({ status: 'error', message: errMsg(err) });
+      } finally {
+        setSavingFoto(false);
+      }
+    };
+    reader.onerror = () => setFotoFeed({ status: 'error', message: 'No se pudo leer la imagen' });
+    reader.readAsDataURL(file);
+  };
+
+  const guardarPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSavePass) {
+      setPassFeed({ status: 'error', message: 'Revisa que todos los requisitos de contraseña se cumplan' });
+      return;
+    }
+    setSavingPass(true);
+    setPassFeed({ status: 'idle', message: '' });
+    try {
+      await cambiarPassword({ PasswordActual: currentPass, NuevaPassword: newPass });
+      setCurrentPass('');
+      setNewPass('');
+      setPassFeed({ status: 'success', message: 'Contraseña actualizada correctamente' });
+    } catch (err) {
+      setPassFeed({ status: 'error', message: errMsg(err) });
+    } finally {
+      setSavingPass(false);
+    }
+  };
+
+  const eliminarCuenta = async () => {
+    const ok = window.confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción es permanente y no se puede deshacer. Perderás todos tus datos, pacientes y configuración.');
+    if (!ok) return;
+    setSavingDelete(true);
+    try {
+      await eliminarMiCuenta();
+      clearSession();
+      navigate('/login');
+    } catch (err) {
+      window.alert(errMsg(err, 'No se pudo eliminar la cuenta. Intenta de nuevo.'));
+      setSavingDelete(false);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -136,12 +335,24 @@ export function Settings() {
             <h3 className="settings__card-title">Foto de Perfil</h3>
           </div>
           <div className="settings__avatar-circle">
-            <User size={36} strokeWidth={1.4} />
+            {fotoPerfil
+              ? <img src={fotoPerfil} alt="Foto de perfil" className="settings__avatar-img" />
+              : <User size={36} strokeWidth={1.4} />}
           </div>
-          <SecondaryButton fullWidth>
-            <Camera size={14} strokeWidth={1.8} />
-            Cambiar foto
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFotoChange}
+          />
+          <SecondaryButton fullWidth onClick={handleFotoClick} disabled={savingFoto || loadingProfile}>
+            {savingFoto ? <Loader2 size={14} strokeWidth={1.8} className="settings__spin" /> : <Camera size={14} strokeWidth={1.8} />}
+            {savingFoto ? 'Subiendo…' : 'Cambiar foto'}
           </SecondaryButton>
+          <div style={{ marginTop: 10 }}>
+            <Feedback {...fotoFeed} />
+          </div>
         </ContentCard>
 
         <ContentCard id="perfil" style={{ scrollMarginTop: 88 }}>
@@ -149,26 +360,31 @@ export function Settings() {
             <User size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Editar Perfil</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <TextInput label="Nombre" name="firstName" value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              onKeyDown={(e) => blockNameKey(e, 'profile-firstName')}
-              error={fieldErrors['profile-firstName']}
-            />
-            <TextInput label="Apellido Paterno" name="lastName" value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              onKeyDown={(e) => blockNameKey(e, 'profile-lastName')}
-              error={fieldErrors['profile-lastName']}
-            />
-            <TextInput label="Apellido Materno" name="maternalLastName" value={maternalLastName}
-              onChange={(e) => setMaternalLastName(e.target.value)}
-              onKeyDown={(e) => blockNameKey(e, 'profile-maternal')}
-              error={fieldErrors['profile-maternal']}
-            />
-          </div>
-          <div style={{ marginTop: 20 }}>
-            <PrimaryButton fullWidth>Guardar cambios</PrimaryButton>
-          </div>
+          <form onSubmit={guardarPerfil}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <TextInput label="Nombre" name="firstName" value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                onKeyDown={(e) => blockNameKey(e, 'profile-firstName')}
+                error={fieldErrors['profile-firstName']}
+              />
+              <TextInput label="Apellido Paterno" name="lastName" value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                onKeyDown={(e) => blockNameKey(e, 'profile-lastName')}
+                error={fieldErrors['profile-lastName']}
+              />
+              <TextInput label="Apellido Materno" name="maternalLastName" value={maternalLastName}
+                onChange={(e) => setMaternalLastName(e.target.value)}
+                onKeyDown={(e) => blockNameKey(e, 'profile-maternal')}
+                error={fieldErrors['profile-maternal']}
+              />
+            </div>
+            <Feedback {...perfilFeed} />
+            <div style={{ marginTop: 20 }}>
+              <PrimaryButton type="submit" fullWidth disabled={savingPerfil || loadingProfile}>
+                {savingPerfil ? 'Guardando…' : 'Guardar cambios'}
+              </PrimaryButton>
+            </div>
+          </form>
         </ContentCard>
 
         <ContentCard id="correo" style={{ scrollMarginTop: 88 }}>
@@ -176,17 +392,22 @@ export function Settings() {
             <Mail size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Cambiar Correo</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <TextInput label="Correo actual" name="currentEmail" defaultValue={mockUser.email} disabled />
-            <TextInput label="Nuevo correo" name="newEmail" placeholder="nuevo@correo.com" value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              onKeyDown={(e) => blockSpaceKey(e, 'newEmail')}
-              error={fieldErrors['newEmail']}
-            />
-          </div>
-          <div style={{ marginTop: 20 }}>
-            <PrimaryButton fullWidth>Cambiar correo</PrimaryButton>
-          </div>
+          <form onSubmit={guardarCorreo}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <TextInput label="Correo actual" name="currentEmail" value={currentEmail} disabled />
+              <TextInput label="Nuevo correo" name="newEmail" placeholder="nuevo@correo.com" value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                onKeyDown={(e) => blockSpaceKey(e, 'newEmail')}
+                error={fieldErrors['newEmail']}
+              />
+            </div>
+            <Feedback {...correoFeed} />
+            <div style={{ marginTop: 20 }}>
+              <PrimaryButton type="submit" fullWidth disabled={!newEmail.trim() || savingCorreo}>
+                {savingCorreo ? 'Guardando…' : 'Cambiar correo'}
+              </PrimaryButton>
+            </div>
+          </form>
         </ContentCard>
       </div>
 
@@ -196,43 +417,46 @@ export function Settings() {
             <LockKeyhole size={iconSize} strokeWidth={1.8} style={{ color: 'var(--text-secondary)' }} />
             <h3 className="settings__card-title">Cambiar Contraseña</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <PasswordInput
-              label="Contraseña actual" name="currentPassword" placeholder="••••••••"
-              showPassword={showCurrent}
-              onToggleVisibility={() => setShowCurrent(!showCurrent)}
-              eyeIcon={<Eye size={17} strokeWidth={1.8} />}
-              eyeOffIcon={<EyeOff size={17} strokeWidth={1.8} />}
-              value={currentPass}
-              onChange={(e) => setCurrentPass(e.target.value)}
-            />
-            <PasswordInput
-              label="Nueva contraseña" name="newPass" placeholder="Mínimo 8 caracteres"
-              showPassword={showNewPass}
-              onToggleVisibility={() => setShowNewPass(!showNewPass)}
-              eyeIcon={<Eye size={17} strokeWidth={1.8} />}
-              eyeOffIcon={<EyeOff size={17} strokeWidth={1.8} />}
-              value={newPass}
-              onChange={(e) => setNewPass(e.target.value)}
-              onKeyDown={(e) => blockSpaceKey(e, 'newPass')}
-              error={fieldErrors['newPass']}
-            />
-            {newPass.length > 0 && (
-              <div className="register__checks">
-                {passCheckItems.map((item) => (
-                  <div key={item.key} className={`register__check ${passChecks[item.key] ? 'register__check--pass' : 'register__check--fail'}`}>
-                    {passChecks[item.key] ? <Check size={14} /> : <X size={14} />}
-                    <span>{item.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div style={{ marginTop: 20 }}>
-            <PrimaryButton fullWidth disabled={newPass.length > 0 && !allPassChecks}>
-              Actualizar contraseña
-            </PrimaryButton>
-          </div>
+          <form onSubmit={guardarPassword}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <PasswordInput
+                label="Contraseña actual" name="currentPassword" placeholder="••••••••"
+                showPassword={showCurrent}
+                onToggleVisibility={() => setShowCurrent(!showCurrent)}
+                eyeIcon={<Eye size={17} strokeWidth={1.8} />}
+                eyeOffIcon={<EyeOff size={17} strokeWidth={1.8} />}
+                value={currentPass}
+                onChange={(e) => setCurrentPass(e.target.value)}
+              />
+              <PasswordInput
+                label="Nueva contraseña" name="newPass" placeholder="Mínimo 8 caracteres"
+                showPassword={showNewPass}
+                onToggleVisibility={() => setShowNewPass(!showNewPass)}
+                eyeIcon={<Eye size={17} strokeWidth={1.8} />}
+                eyeOffIcon={<EyeOff size={17} strokeWidth={1.8} />}
+                value={newPass}
+                onChange={(e) => setNewPass(e.target.value)}
+                onKeyDown={(e) => blockSpaceKey(e, 'newPass')}
+                error={fieldErrors['newPass']}
+              />
+              {newPass.length > 0 && (
+                <div className="register__checks">
+                  {passCheckItems.map((item) => (
+                    <div key={item.key} className={`register__check ${passChecks[item.key] ? 'register__check--pass' : 'register__check--fail'}`}>
+                      {passChecks[item.key] ? <Check size={14} /> : <X size={14} />}
+                      <span>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Feedback {...passFeed} />
+            <div style={{ marginTop: 20 }}>
+              <PrimaryButton type="submit" fullWidth disabled={!canSavePass || savingPass}>
+                {savingPass ? 'Guardando…' : 'Actualizar contraseña'}
+              </PrimaryButton>
+            </div>
+          </form>
         </ContentCard>
       </div>
 
@@ -246,7 +470,9 @@ export function Settings() {
             Eliminar tu cuenta es permanente. Perderás acceso a todos tus datos, pacientes y configuración.
           </p>
           <div style={{ marginTop: 16 }}>
-            <DangerButton>Eliminar mi cuenta</DangerButton>
+            <DangerButton onClick={eliminarCuenta} disabled={savingDelete}>
+              {savingDelete ? 'Eliminando…' : 'Eliminar mi cuenta'}
+            </DangerButton>
           </div>
         </ContentCard>
       </div>

@@ -8,6 +8,8 @@ export interface SessionUser {
   nombre: string;
   rol: string;
   plan: string;
+  correo?: string;
+  fotoPerfil?: string | null;
 }
 
 export function saveSession(
@@ -65,4 +67,12 @@ export function updateSessionPlan(plan: string): void {
   if (!user) return;
   const updated: SessionUser = { ...user, plan };
   localStorage.setItem(USER_KEY, JSON.stringify(updated));
+}
+
+export function updateSessionUser(patch: Partial<SessionUser>): SessionUser | null {
+  const user = getUser();
+  if (!user) return null;
+  const updated: SessionUser = { ...user, ...patch };
+  localStorage.setItem(USER_KEY, JSON.stringify(updated));
+  return updated;
 }
