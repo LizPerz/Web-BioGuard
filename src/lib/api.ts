@@ -127,11 +127,27 @@ export function verificar2FA(payload: { Correo: string; Codigo: string }): Promi
   });
 }
 
-export function forgotPassword(payload: { Correo: string }): Promise<MessageResponse> {
-  return request<MessageResponse>('/api/Auth/forgot-password', {
+export function forgotPassword(payload: { Correo: string }): Promise<ForgotPasswordResponse> {
+  return request<ForgotPasswordResponse>('/api/Auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+}
+
+export interface ForgotPasswordResponse extends MessageResponse {
+  requestId?: string;
+  token?: string;
+}
+
+export function marcarResetAbierto(payload: { RequestId: string }): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/Auth/reset-password/abrir', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getResetAbierto(requestId: string): Promise<{ abierto: boolean }> {
+  return request<{ abierto: boolean }>(`/api/Auth/reset-password/estado?requestId=${encodeURIComponent(requestId)}`);
 }
 
 export function resetPassword(payload: { Token: string; NuevaPassword: string }): Promise<MessageResponse> {
@@ -298,6 +314,8 @@ export interface CuidadorResponse {
   nombre: string;
   parentesco: string;
   pacienteId?: string;
+  telefono?: string;
+  correo?: string;
 }
 
 export interface CrearCuidadorPayload {
@@ -321,7 +339,7 @@ export function crearCuidador(payload: CrearCuidadorPayload): Promise<MessageRes
 
 export function actualizarCuidador(
   id: string,
-  payload: { Nombre: string; Parentesco: string },
+  payload: { Nombre: string; Parentesco: string; Telefono: string; Correo: string },
 ): Promise<MessageResponse> {
   return request<MessageResponse>(`/api/Cuidadores/${id}`, {
     method: 'PUT',

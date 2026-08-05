@@ -289,7 +289,7 @@ export function Billing() {
             </div>
             <div className="billing__ssl-badge">
               <Shield size={11} strokeWidth={2} />
-              Simulado
+              Seguro
             </div>
           </div>
 
@@ -298,8 +298,8 @@ export function Billing() {
             title={historial.length > 0 ? 'Pago registrado' : 'Sin métodos de pago'}
             description={
               historial.length > 0
-                ? 'Puedes cambiar de plan y simular un nuevo pago cuando quieras'
-                : 'Simula tu pago con tarjeta de prueba para activar el plan que elijas'
+                ? 'Puedes cambiar de plan y realizar un nuevo pago cuando quieras'
+                : 'Ingresa los datos de tu tarjeta para activar el plan que elijas'
             }
             action={
               <PrimaryButton onClick={abrirSelectorDePlanes}>
@@ -325,7 +325,7 @@ export function Billing() {
           <EmptyState
             icon={<ReceiptText size={24} strokeWidth={1.6} />}
             title="Aún no hay transacciones"
-            description="Tu historial de pagos aparecerá aquí cuando simules tu primera suscripción"
+            description="Tu historial de pagos aparecerá aquí cuando realices tu primera suscripción"
           />
         ) : (
           <ul className="billing__tx-list">
@@ -423,7 +423,7 @@ function ModalPago({
       subtitle={
         planSeleccionado
           ? `Plan ${planSeleccionado.nombre} · ${precioTexto(planSeleccionado)}`
-          : 'Selecciona el plan que quieres activar (pago simulado)'
+          : 'Selecciona el plan que quieres activar'
       }
     >
       {pagoExito ? (
@@ -447,7 +447,6 @@ function ModalPago({
               <span className="billing__selector-price">{precioTexto(plan)}</span>
             </button>
           ))}
-          <p className="billing__selector-hint">Este es un pago simulado de prueba, no se realizan cargos reales.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -495,7 +494,7 @@ function ModalPago({
           )}
           <div className="billing__pago-nota">
             <Lock size={13} strokeWidth={1.8} />
-            Modo simulado: ningún cargo real se procesará.
+            Tus datos de pago se procesan de forma segura con cifrado SSL.
           </div>
           <div className="modal__actions">
             <GhostButton type="button" onClick={onCancelarSeleccion} disabled={pagoProcesando}>

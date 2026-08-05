@@ -13,6 +13,7 @@ import { CrearPacienteModal } from '../../components/pacientes/CrearPacienteModa
 import {
   getMiPaciente,
   getCuidadores,
+  getMiPlan,
   crearCuidador,
   actualizarCuidador,
   eliminarCuidador as apiEliminarCuidador,
@@ -31,10 +32,13 @@ import './Pacientes.css';
 const soloLetras = (value: string) =>
   value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ ]/g, '').replace(/\s+/g, ' ');
 
+const soloDigitos = (value: string) => value.replace(/\D/g, '').slice(0, 10);
+
 export function Pacientes() {
   const navigate = useNavigate();
   const [paciente, setPaciente] = useState<PacienteResponse | null>(null);
   const [cuidadores, setCuidadores] = useState<CuidadorResponse[]>([]);
+  const [limiteCuidadores, setLimiteCuidadores] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState('');
 
@@ -79,6 +83,12 @@ export function Pacientes() {
         }
       } else {
         setCuidadores([]);
+      }
+      try {
+        const plan = await getMiPlan();
+        setLimiteCuidadores(plan.limiteCuidadores > 0 ? plan.limiteCuidadores : null);
+      } catch {
+        setLimiteCuidadores(null);
       }
     } catch (err) {
       if (err instanceof ApiError) setPageError(err.message);
@@ -221,8 +231,8 @@ export function Pacientes() {
     setCuidadorEditId(c.id);
     setCuidadorNombre(c.nombre);
     setCuidadorParentesco(c.parentesco);
-    setCuidadorTelefono('');
-    setCuidadorCorreo('');
+    setCuidadorTelefono(c.telefono ?? '');
+    setCuidadorCorreo(c.correo ?? '');
     setCuidadorError('');
     setCuidadorOpen(true);
   };
@@ -232,6 +242,14 @@ export function Pacientes() {
       setCuidadorError('Nombre y parentesco son obligatorios');
       return;
     }
+    if (cuidadorTelefono.length !== 10) {
+      setCuidadorError('El teléfono debe tener exactamente 10 dígitos numéricos');
+      return;
+    }
+    if (!cuidadorCorreo.trim()) {
+      setCuidadorError('El correo es obligatorio');
+      return;
+    }
     setCuidadorGuardando(true);
     setCuidadorError('');
     try {
@@ -239,14 +257,16 @@ export function Pacientes() {
         await actualizarCuidador(cuidadorEditId, {
           Nombre: cuidadorNombre.trim(),
           Parentesco: cuidadorParentesco.trim(),
+          Telefono: cuidadorTelefono,
+          Correo: cuidadorCorreo.trim(),
         });
       } else if (paciente) {
         await crearCuidador({
           PacienteId: paciente.id,
           Nombre: cuidadorNombre.trim(),
           Parentesco: cuidadorParentesco.trim(),
-          Telefono: cuidadorTelefono.trim() || undefined,
-          Correo: cuidadorCorreo.trim() || undefined,
+          Telefono: cuidadorTelefono,
+          Correo: cuidadorCorreo.trim(),
         });
       }
       setCuidadorOpen(false);
@@ -275,6 +295,9 @@ export function Pacientes() {
 
   const iconSize = 16;
 
+  const limiteAlcanzado =
+    limiteCuidadores != null && cuidadores.length >= limiteCuidadores;
+
   return (
     <DashboardLayout>
       <PageHeader
@@ -283,7 +306,7 @@ export function Pacientes() {
         onBack={() => navigate('/dashboard')}
         action={
           paciente ? (
-            <PrimaryButton onClick={abrirNuevoCuidador}>
+            <PrimaryButton onClick={abrirNuevoCuidador} disabled={limiteAlcanzado}>
               <UserPlus size={16} strokeWidth={2} />
               Añadir Cuidador
             </PrimaryButton>
@@ -378,10 +401,21 @@ export function Pacientes() {
             <div className="pacientes__card-title-row">
               <Users size={iconSize} strokeWidth={1.8} style={{ color: 'var(--cyan)' }} />
               <h3 className="pacientes__card-title">Cuidadores</h3>
-              <span className="pacientes__count">{cuidadores.length}</span>
+              <span className="pacientes__count">
+                {cuidadores.length}
+                {limiteCuidadores != null ? `/${limiteCuidadores}` : ''}
+              </span>
             </div>
             {paciente && (
-              <SecondaryButton onClick={abrirNuevoCuidador}>
+              <SecondaryButton
+                onClick={abrirNuevoCuidador}
+                disabled={limiteAlcanzado}
+                title={
+                  limiteAlcanzado
+                    ? `Alcanzaste el límite de ${limiteCuidadores} cuidadores de tu plan`
+                    : undefined
+                }
+              >
                 <UserPlus size={13} strokeWidth={1.8} />
                 Añadir
               </SecondaryButton>
@@ -522,14 +556,15 @@ export function Pacientes() {
             placeholder="Ej. Hijo, Esposa, Enfermero…"
           />
           <TextInput
-            label="Teléfono (opcional)"
+            label="Teléfono (10 dígitos)"
             name="cuidadorTelefono"
             value={cuidadorTelefono}
-            onChange={(e) => setCuidadorTelefono(e.target.value)}
-            placeholder="+52…"
+            onChange={(e) => setCuidadorTelefono(soloDigitos(e.target.value))}
+            placeholder="Ej. 5512345678"
+            maxLength={10}
           />
           <TextInput
-            label="Correo (opcional)"
+            label="Correo"
             name="cuidadorCorreo"
             type="email"
             value={cuidadorCorreo}
