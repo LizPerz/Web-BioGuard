@@ -40,7 +40,7 @@ export function VerifyEmail() {
           },
         );
         setPendingOnboarding(true);
-        navigate('/billing');
+        navigate('/planes');
       }
     } catch (err) {
       if (err instanceof ApiError) {
