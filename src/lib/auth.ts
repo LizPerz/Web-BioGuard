@@ -2,6 +2,7 @@ const ACCESS_TOKEN_KEY = 'bioguard_access_token';
 const REFRESH_TOKEN_KEY = 'bioguard_refresh_token';
 const USER_KEY = 'bioguard_user';
 const ONBOARDING_KEY = 'bioguard_pending_onboarding';
+const PENDING_VERIFY_EMAIL_KEY = 'bioguard_pending_verify_email';
 
 export interface SessionUser {
   id: string;
@@ -60,6 +61,18 @@ export function getPendingOnboarding(): boolean {
 
 export function clearPendingOnboarding(): void {
   localStorage.removeItem(ONBOARDING_KEY);
+}
+
+export function setPendingVerifyEmail(correo: string): void {
+  sessionStorage.setItem(PENDING_VERIFY_EMAIL_KEY, correo);
+}
+
+export function getPendingVerifyEmail(): string {
+  return sessionStorage.getItem(PENDING_VERIFY_EMAIL_KEY) ?? '';
+}
+
+export function clearPendingVerifyEmail(): void {
+  sessionStorage.removeItem(PENDING_VERIFY_EMAIL_KEY);
 }
 
 export function updateSessionPlan(plan: string): void {

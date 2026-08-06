@@ -59,7 +59,9 @@ export interface AuthResponse {
 export interface LoginWebResponse {
   message?: string;
   requires2FA?: boolean;
+  requiresVerification?: boolean;
   userId?: string;
+  correo?: string;
   token?: string;
   nombre?: string;
   rol?: string;
