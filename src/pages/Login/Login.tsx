@@ -27,6 +27,10 @@ export function Login() {
     setFormError('');
     try {
       const result = await loginWeb({ Correo: email.trim(), Password: password });
+      if (result.requiresVerification && result.userId) {
+        navigate('/verify-email', { state: { correo: email.trim(), userId: result.userId } });
+        return;
+      }
       if (result.requires2FA && result.userId) {
         navigate('/verify-2fa', { state: { correo: email.trim(), userId: result.userId } });
         return;

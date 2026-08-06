@@ -6,7 +6,7 @@ import { PrimaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
 import { Eye, EyeOff, Check, X } from 'lucide-react';
 import { registerWeb, ApiError } from '../../lib/api';
-import { saveSession } from '../../lib/auth';
+import { saveSession, setPendingVerifyEmail } from '../../lib/auth';
 import './Register.css';
 
 interface PasswordChecks {
@@ -88,6 +88,7 @@ export function Register() {
         PlanNombre: selectedPlan,
       });
       if (result.requiresVerification) {
+        setPendingVerifyEmail(email.trim());
         navigate('/verify-email', { state: { correo: email.trim(), userId: result.userId } });
         return;
       }

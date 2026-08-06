@@ -64,11 +64,7 @@ export function SelectPlan() {
 
   const terminarActivacion = () => {
     clearPendingOnboarding();
-    if (onboarding) {
-      navigate('/dashboard', { state: { crearPaciente: true } });
-    } else {
-      navigate('/billing');
-    }
+    navigate('/dashboard', { state: onboarding ? { crearPaciente: true } : undefined });
   };
 
   const activarPlan = async (plan: PlanResponse) => {
@@ -180,6 +176,11 @@ export function SelectPlan() {
               })}
             </div>
           </>
+        )}
+        {pagoError && !pagoOpen && (
+          <div className="modal__error" role="alert" style={{ margin: '16px auto', maxWidth: 420 }}>
+            {pagoError}
+          </div>
         )}
       </div>
 
