@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { AuthCard } from '../../components/auth/AuthCard';
@@ -15,10 +15,38 @@ export function VerifyEmail() {
   const [formError, setFormError] = useState('');
   const [resendMsg, setResendMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const autoSentRef = useRef(false);
 
   const handleChange = (index: number, val: string) => {
     setCode((prev) => prev.map((c, i) => (i === index ? val : c)));
   };
+
+  const handleResend = useCallback(async () => {
+    if (!correo || sending) return;
+    setSending(true);
+    setResendMsg('');
+    setFormError('');
+    try {
+      await enviar2FA({ Correo: correo });
+      setResendMsg('Código enviado a tu correo');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setFormError(err.message);
+      } else {
+        setFormError('No se pudo enviar el código. Intenta de nuevo.');
+      }
+    } finally {
+      setSending(false);
+    }
+  }, [correo, sending]);
+
+  useEffect(() => {
+    if (!autoSentRef.current && correo) {
+      autoSentRef.current = true;
+      handleResend();
+    }
+  }, [correo, handleResend]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,19 +81,6 @@ export function VerifyEmail() {
     }
   };
 
-  const handleResend = async () => {
-    if (!correo) return;
-    setResendMsg('');
-    try {
-      await enviar2FA({ Correo: correo });
-      setResendMsg('Código reenviado a tu correo');
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setResendMsg(err.message);
-      }
-    }
-  };
-
   return (
     <AuthLayout>
       <AuthCard
@@ -85,6 +100,7 @@ export function VerifyEmail() {
             {loading ? 'Verificando…' : 'Verificar Código'}
           </PrimaryButton>
           <div style={{ textAlign: 'center', marginTop: 24, fontSize: 14 }}>
+            {sending && <div style={{ marginBottom: 8, color: 'var(--text-secondary, #64748b)' }}>Enviando código a tu correo…</div>}
             {resendMsg && <div style={{ marginBottom: 8, color: 'var(--success, #16a34a)' }}>{resendMsg}</div>}
             <Link to="#" onClick={(e) => { e.preventDefault(); handleResend(); }} style={{ fontWeight: 500 }}>
               Reenviar código
