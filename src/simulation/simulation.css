@@ -1,0 +1,108 @@
+.sim-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  background: var(--bg-card);
+  border: 1px solid rgba(8, 216, 242, 0.2);
+  border-radius: var(--radius-card);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sim-controls__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-controls__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.sim-controls__dot--live {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(0, 229, 139, 0.5);
+  animation: sim-pulse 1.5s infinite;
+}
+
+.sim-controls__dot--off {
+  background: var(--text-tertiary);
+}
+
+@keyframes sim-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.sim-controls__label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.sim-controls__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sim-controls__modes {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.sim-btn {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sim-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.sim-btn--start {
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+}
+
+.sim-btn--stop {
+  background: rgba(255, 79, 95, 0.12);
+  border-color: rgba(255, 79, 95, 0.3);
+  color: var(--danger);
+}
+
+.sim-btn--mode {
+  font-size: 11px;
+  height: 26px;
+  padding: 0 10px;
+}
+
+.sim-btn--active {
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+}
+
+@media (max-width: 640px) {
+  .sim-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sim-controls__modes {
+    margin-left: 0;
+  }
+}
