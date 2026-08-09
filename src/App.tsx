@@ -9,7 +9,7 @@ import { Health } from './pages/Health/Health';
 import { Security } from './pages/Security/Security';
 import { Billing } from './pages/Billing/Billing';
 import { Settings } from './pages/Settings/Settings';
-import { BiometricProvider, SimDashboard, SimHealth } from './simulation';
+import { BiometricProvider } from './simulation';
 
 function App() {
   return (
@@ -20,19 +20,11 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/health" element={<Health />} />
+        <Route path="/dashboard" element={<BiometricProvider><Dashboard /></BiometricProvider>} />
+        <Route path="/health" element={<BiometricProvider><Health /></BiometricProvider>} />
         <Route path="/security" element={<Security />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/settings" element={<Settings />} />
-        <Route
-          path="/sim/dashboard"
-          element={<BiometricProvider><SimDashboard /></BiometricProvider>}
-        />
-        <Route
-          path="/sim/health"
-          element={<BiometricProvider><SimHealth /></BiometricProvider>}
-        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
