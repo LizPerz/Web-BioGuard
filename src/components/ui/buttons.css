@@ -1,0 +1,106 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 18px;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn--full {
+  width: 100%;
+}
+
+/* Primario */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(8, 216, 242, 0.15);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Secundario */
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--text-tertiary);
+}
+
+/* Peligro */
+.btn-danger {
+  background: rgba(255, 79, 95, 0.08);
+  color: var(--danger);
+  border: 1px solid rgba(255, 79, 95, 0.3);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 79, 95, 0.16);
+  border-color: rgba(255, 79, 95, 0.5);
+}
+
+/* Ghost */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  height: 32px;
+  padding: 0 10px;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+/* Botón de tema */
+.btn-theme {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: var(--radius-btn);
+  background: var(--bg-theme-btn);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-theme:hover {
+  color: var(--text-primary);
+  border-color: var(--text-tertiary);
+}

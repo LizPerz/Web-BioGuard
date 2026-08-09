@@ -1,0 +1,173 @@
+:root {
+  /* Fondos */
+  --bg-main: #070E1A;
+  --bg-main-alt: #09111F;
+  --bg-sidebar: #09111E;
+  --bg-header: #0C1526;
+  --bg-card: #121E33;
+  --bg-card-elevated: #142138;
+  --bg-input: #0E192B;
+  --bg-input-hover: #101D32;
+  --bg-input-disabled: #0A1422;
+  --bg-secondary: #19263B;
+  --bg-theme-btn: #111C31;
+
+  /* Bordes */
+  --border-main: #22324E;
+  --border-subtle: rgba(69, 98, 144, 0.35);
+  --border-accent: #2887FF;
+  --border-cyan: #00D9F5;
+  --border-input: #253653;
+  --border-card: #1E304C;
+  --border-auth: #28405F;
+  --border-secondary: #263754;
+
+  /* Acentos */
+  --cyan: #08D8F2;
+  --blue: #2D86FF;
+  --gradient-primary: linear-gradient(90deg, #08D8F2 0%, #2D86FF 100%);
+
+  /* Texto */
+  --text-primary: #F6F8FC;
+  --text-secondary: #91A9D3;
+  --text-tertiary: #607BA8;
+  --text-disabled: #435A82;
+  --text-placeholder: #506A95;
+  --text-label: #6681AD;
+
+  /* Semánticos */
+  --success: #00E58B;
+  --danger: #FF4F5F;
+  --warning: #FFD43B;
+  --purple: #A876F5;
+
+  /* Fondos de iconos */
+  --icon-bg-pulse: rgba(255, 79, 95, 0.14);
+  --icon-bg-temp: rgba(8, 216, 242, 0.14);
+  --icon-bg-sweat: rgba(168, 118, 245, 0.14);
+  --icon-bg-ai: rgba(45, 134, 255, 0.16);
+  --icon-bg-security: rgba(45, 134, 255, 0.14);
+  --icon-bg-success: rgba(0, 229, 139, 0.14);
+
+  /* Sidebar */
+  --sidebar-active-bg: rgba(8, 216, 242, 0.16);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.035);
+  --sidebar-plan-bg: rgba(255, 255, 255, 0.02);
+
+  /* Estados */
+  --hover-subtle: rgba(255, 255, 255, 0.04);
+  --danger-hover: rgba(255, 79, 95, 0.1);
+
+  /* Hovers y badges */
+  --hover-bg: rgba(255, 255, 255, 0.045);
+
+  /* Radios */
+  --radius-field: 10px;
+  --radius-btn: 10px;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  --radius-avatar: 50%;
+  --radius-nav-item: 10px;
+
+  /* Sombras */
+  --shadow-btn: 0 8px 24px rgba(8, 216, 242, 0.10);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.10);
+  --shadow-pro-card: 0 6px 24px rgba(8, 216, 242, 0.05);
+
+  /* Espaciado */
+  --space-4: 3px;
+  --space-8: 6px;
+  --space-12: 8px;
+  --space-16: 12px;
+  --space-20: 14px;
+  --space-24: 16px;
+  --space-28: 20px;
+  --space-32: 24px;
+  --space-40: 28px;
+  --space-48: 32px;
+  --space-64: 40px;
+  --space-80: 52px;
+
+  /* Tipografía */
+  --font-sans: 'Inter', 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Layout */
+  --app-top-offset: 64px;
+  --sidebar-width: 230px;
+  --header-height: 64px;
+  --public-header-height: 54px;
+  --content-padding-desktop: 24px;
+  --content-padding-tablet: 20px;
+  --content-padding-mobile: 14px;
+
+  /* Transiciones */
+  --transition-fast: 160ms ease;
+  --transition-normal: 200ms ease;
+}
+
+[data-theme='light'] {
+  /* Fondos */
+  --bg-main: #EDF1F8;
+  --bg-main-alt: #E6ECF5;
+  --bg-sidebar: #FFFFFF;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-elevated: #F6F9FE;
+  --bg-input: #FFFFFF;
+  --bg-input-hover: #F1F5FB;
+  --bg-input-disabled: #E4EAF3;
+  --bg-secondary: #E4EBF5;
+  --bg-theme-btn: #E9EFF7;
+
+  /* Bordes */
+  --border-main: #D7E0EC;
+  --border-subtle: rgba(45, 134, 255, 0.28);
+  --border-accent: #2D86FF;
+  --border-cyan: #0896B8;
+  --border-input: #CBD7E6;
+  --border-card: #DBE4F0;
+  --border-auth: #D3DEEA;
+  --border-secondary: #CFDBE9;
+
+  /* Acentos */
+  --cyan: #0896B8;
+  --blue: #2D86FF;
+  --gradient-primary: linear-gradient(90deg, #0896B8 0%, #2D86FF 100%);
+
+  /* Texto */
+  --text-primary: #0D1B2E;
+  --text-secondary: #40587C;
+  --text-tertiary: #6E87A9;
+  --text-disabled: #9AAFCB;
+  --text-placeholder: #8CA2BF;
+  --text-label: #5E7CA5;
+
+  /* Semánticos */
+  --success: #00A86B;
+  --danger: #E33444;
+  --warning: #C7A400;
+  --purple: #7E5BD0;
+
+  /* Fondos de iconos */
+  --icon-bg-pulse: rgba(227, 52, 68, 0.10);
+  --icon-bg-temp: rgba(8, 150, 184, 0.10);
+  --icon-bg-sweat: rgba(126, 91, 208, 0.10);
+  --icon-bg-ai: rgba(45, 134, 255, 0.10);
+  --icon-bg-security: rgba(45, 134, 255, 0.10);
+  --icon-bg-success: rgba(0, 168, 107, 0.10);
+
+  /* Sidebar */
+  --sidebar-active-bg: rgba(8, 150, 184, 0.12);
+  --sidebar-hover-bg: rgba(13, 27, 46, 0.05);
+  --sidebar-plan-bg: rgba(13, 27, 46, 0.04);
+
+  /* Estados */
+  --hover-subtle: rgba(13, 27, 46, 0.05);
+  --hover-bg: rgba(13, 27, 46, 0.05);
+  --danger-hover: rgba(227, 52, 68, 0.1);
+
+  /* Sombras */
+  --shadow-btn: 0 8px 24px rgba(45, 134, 255, 0.16);
+  --shadow-card: 0 8px 30px rgba(24, 48, 84, 0.08);
+  --shadow-pro-card: 0 6px 24px rgba(8, 150, 184, 0.10);
+}

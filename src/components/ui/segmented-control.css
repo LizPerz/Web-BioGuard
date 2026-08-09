@@ -1,0 +1,30 @@
+.segmented {
+  display: inline-flex;
+  background: var(--bg-theme-btn);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-field);
+  padding: 3px;
+  gap: 2px;
+}
+
+.segmented__option {
+  height: 28px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .segmented__option {
+    padding: 0 12px;
+    font-size: 11px;
+  }
+}

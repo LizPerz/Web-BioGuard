@@ -1,0 +1,108 @@
+.select-plan {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.select-plan .page-header {
+  text-align: center;
+}
+
+.select-plan__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 0 12px;
+}
+
+@media (max-width: 1023px) {
+  .select-plan__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .select-plan__grid > :last-child {
+    grid-column: 1 / -1;
+    max-width: 320px;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .select-plan__grid {
+    grid-template-columns: 1fr;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+}
+
+.select-plan__pago-resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-card);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.select-plan__pago-resumen span:last-child {
+  color: var(--cyan);
+  font-weight: 800;
+}
+
+.select-plan__pago-nota {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.select-plan__pago-exito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 0 4px;
+}
+
+.select-plan__pago-exito-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  margin-bottom: 14px;
+}
+
+.select-plan__pago-exito-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.select-plan__pago-exito-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.select-plan__spin {
+  animation: select-plan-spin 1s linear infinite;
+}
+
+@keyframes select-plan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

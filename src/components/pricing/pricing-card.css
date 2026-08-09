@@ -1,0 +1,126 @@
+.pricing-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 36px 56px 30px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.pricing-card--recommended {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-pro-card);
+}
+
+.pricing-card:hover {
+  border-color: var(--border-subtle);
+}
+
+.pricing-card__badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 16px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.pricing-card__header {
+  text-align: center;
+  margin-bottom: var(--space-20);
+}
+
+.pricing-card__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-label);
+  letter-spacing: 0.08em;
+}
+
+.pricing-card__name {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: var(--space-4);
+  letter-spacing: -0.01em;
+}
+
+.pricing-card__price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  margin-top: var(--space-4);
+}
+
+.pricing-card__price {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--cyan);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.pricing-card__period {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.pricing-card__benefits {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: var(--space-20);
+  flex: 1;
+}
+
+.pricing-card__benefits li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.pricing-card__benefits li svg {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.pricing-card__action {
+  margin-top: auto;
+}
+
+.pricing-card__spinner {
+  animation: pricing-card-spin 1s linear infinite;
+}
+
+@keyframes pricing-card-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .pricing-card {
+    padding: 24px 28px 18px;
+  }
+  .pricing-card__price {
+    font-size: 28px;
+  }
+  .pricing-card__name {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,120 @@
+.landing {
+  background: var(--bg-main);
+  min-height: 100vh;
+}
+
+.landing__hero {
+  padding: 80px 24px 40px;
+  text-align: center;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+.landing__hero-logo {
+  display: inline-flex;
+  margin-bottom: var(--space-20);
+}
+
+.landing__hero-logo img {
+  height: 120px;
+  width: auto;
+}
+
+.landing__hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-8);
+}
+
+.landing__hero-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.landing__pricing {
+  padding: 0 40px 56px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.landing__pricing-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-8);
+  letter-spacing: -0.02em;
+}
+
+.landing__pricing-period {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-28);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.landing__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  max-width: calc(100vw - 80px);
+  margin: 0 auto;
+}
+
+@media (max-width: 1023px) {
+  .landing__hero {
+    padding: 75px 20px 32px;
+  }
+  .landing__hero-title {
+    font-size: 24px;
+  }
+  .landing__pricing {
+    padding: 0 16px 40px;
+  }
+  .landing__cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .landing__cards > :last-child {
+    grid-column: 1 / -1;
+    max-width: 320px;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .landing__hero {
+    padding: 65px 14px 28px;
+  }
+  .landing__hero-title {
+    font-size: 21px;
+  }
+  .landing__hero-logo img {
+    height: 85px;
+  }
+  .landing__hero-desc {
+    font-size: 12px;
+  }
+  .landing__pricing {
+    padding: 0 12px 40px;
+  }
+  .landing__pricing-title {
+    font-size: 20px;
+  }
+  .landing__cards {
+    grid-template-columns: 1fr;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+}
