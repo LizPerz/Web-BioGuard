@@ -12,6 +12,7 @@ import {
   Loader2,
   Check,
   UserRound,
+  Radio,
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -33,6 +34,7 @@ import {
   type EventoResponse,
   type AlertaResponse,
 } from '../../lib/api';
+import { useSimulation } from '../../simulation';
 import './Reportes.css';
 
 type Periodo = 'dia' | 'semana' | '15d' | '30d';
@@ -112,6 +114,9 @@ export function Reportes() {
   const [generando, setGenerando] = useState(false);
   const [reporte, setReporte] = useState<ReporteDatos | null>(null);
   const [rangoTexto, setRangoTexto] = useState('');
+  const [fuenteSimulacion, setFuenteSimulacion] = useState(false);
+
+  const { readings, events: simEvents, isRunning } = useSimulation();
 
   const maxDias = plan?.diasHistorial && plan.diasHistorial > 0 ? plan.diasHistorial : 7;
 
@@ -166,30 +171,89 @@ export function Reportes() {
   };
 
   const generar = async () => {
-    if (!paciente) return;
     setGenerando(true);
     setError('');
+    setFuenteSimulacion(false);
     try {
       const { desde, hasta, texto } = calcularRango();
-      const [lecturas, eventos, alertas] = await Promise.all([
-        getLecturasRango(paciente.id, aIso(desde), aIso(hasta)),
-        getEventos(paciente.id),
-        getHistorialAlertas(paciente.id),
-      ]);
-      const eventosFiltrados = eventos.filter((e) => {
-        const t = new Date(e.fechaEvento).getTime();
-        return t >= desde.getTime() && t <= hasta.getTime();
-      });
-      const alertasFiltradas = alertas.filter((a) => {
-        const t = new Date(a.fechaCreacion).getTime();
-        return t >= desde.getTime() && t <= hasta.getTime();
-      });
-      setReporte({
-        lecturas,
-        eventos: eventosFiltrados,
-        alertas: alertasFiltradas,
-      });
+
+      if (paciente) {
+        try {
+          const [lecturas, eventos, alertas] = await Promise.all([
+            getLecturasRango(paciente.id, aIso(desde), aIso(hasta)),
+            getEventos(paciente.id),
+            getHistorialAlertas(paciente.id),
+          ]);
+          const eventosFiltrados = eventos.filter((e) => {
+            const t = new Date(e.fechaEvento).getTime();
+            return t >= desde.getTime() && t <= hasta.getTime();
+          });
+          const alertasFiltradas = alertas.filter((a) => {
+            const t = new Date(a.fechaCreacion).getTime();
+            return t >= desde.getTime() && t <= hasta.getTime();
+          });
+
+          if (lecturas.length > 0 || eventosFiltrados.length > 0 || alertasFiltradas.length > 0) {
+            setReporte({ lecturas, eventos: eventosFiltrados, alertas: alertasFiltradas });
+            setRangoTexto(texto);
+            return;
+          }
+        } catch {
+          // backend falló, intentamos con simulación
+        }
+      }
+
+      // fallback a simulación
+      if (readings.length === 0) {
+        setError('No hay datos disponibles. Inicia la simulación desde el Dashboard primero.');
+        setReporte(null);
+        return;
+      }
+
+      const simuladas: LecturaResponse[] = readings
+        .filter((r) => {
+          const t = new Date(r.timestamp).getTime();
+          return t >= desde.getTime() && t <= hasta.getTime();
+        })
+        .map((r) => ({
+          id: r.id,
+          pulsoBpm: r.pulsoBpm,
+          temperaturaC: r.temperaturaC,
+          sudoracionGsr: r.sudoracionGsr,
+          probabilidadPico: r.probabilidadPico,
+          timestamp: r.timestamp,
+        }));
+
+      const eventosSim: EventoResponse[] = simEvents
+        .filter((e) => {
+          const t = new Date(e.fechaEvento).getTime();
+          return t >= desde.getTime() && t <= hasta.getTime();
+        })
+        .map((e) => ({
+          id: e.id,
+          nivelRiesgo: e.nivelRiesgo === 'CRITICO' ? 'Critico' : e.nivelRiesgo === 'MODERADO' ? 'Pre-Pico' : 'Normal',
+          probabilidadMl: e.probabilidadMl,
+          descripcion: e.descripcion,
+          fechaEvento: e.fechaEvento,
+          atendida: e.atendida,
+        }));
+
+      const alertasSim: AlertaResponse[] = eventosSim
+        .filter((e) => e.nivelRiesgo === 'Critico')
+        .map((e) => ({
+          id: e.id,
+          tipo: 'sensor',
+          nivel: 'critico',
+          titulo: e.nivelRiesgo === 'Critico' ? 'Alerta crítica de sensor' : 'Advertencia de monitoreo',
+          mensaje: e.descripcion,
+          atendida: false,
+          fechaCreacion: e.fechaEvento,
+          fechaAtencion: null,
+        }));
+
+      setReporte({ lecturas: simuladas, eventos: eventosSim, alertas: alertasSim });
       setRangoTexto(texto);
+      setFuenteSimulacion(true);
     } catch (err) {
       setError(errMsg(err));
       setReporte(null);
@@ -323,7 +387,7 @@ export function Reportes() {
               </div>
             )}
 
-            <PrimaryButton onClick={generar} disabled={!paciente || generando || (periodo === 'dia' && !rangoValido(fecha))}>
+            <PrimaryButton onClick={generar} disabled={(!paciente && !isRunning) || generando || (periodo === 'dia' && !rangoValido(fecha))}>
               {generando ? <Loader2 size={14} strokeWidth={1.8} className="reportes__spin" /> : <FileText size={14} strokeWidth={1.8} />}
               {generando ? 'Generando…' : 'Generar reporte'}
             </PrimaryButton>
@@ -339,7 +403,7 @@ export function Reportes() {
 
       {cargando ? (
         <p className="pacientes__loading">Cargando…</p>
-      ) : !paciente ? (
+      ) : !paciente && !isRunning ? (
         <EmptyState
           icon={<UserRound size={24} strokeWidth={1.6} />}
           title="Sin paciente vinculado"
@@ -349,7 +413,7 @@ export function Reportes() {
         <EmptyState
           icon={<FileText size={24} strokeWidth={1.6} />}
           title="Sin reporte generado"
-          description={`Selecciona un período${periodo === 'dia' ? ' y un día' : ''} y presiona "Generar reporte"`}
+          description={`Selecciona un período${periodo === 'dia' ? ' y un día' : ''} y presiona "Generar reporte"${!paciente && isRunning ? ' (datos de simulación)' : ''}`}
         />
       ) : !tieneDatos ? (
         <EmptyState
@@ -363,9 +427,15 @@ export function Reportes() {
             <div className="reportes__header-brand">
               <span className="reportes__header-logo">BioGuard</span>
               <span className="reportes__header-sub">Reporte de salud</span>
+              {fuenteSimulacion && (
+                <span className="reportes__sim-badge">
+                  <Radio size={12} strokeWidth={2} />
+                  Simulación
+                </span>
+              )}
             </div>
             <div className="reportes__header-meta">
-              <span><strong>Paciente:</strong> {paciente.nombre}</span>
+              <span><strong>Paciente:</strong> {paciente?.nombre ?? 'Simulación wearable'}</span>
               <span><strong>Plan:</strong> {plan?.nombre ?? 'Gratis'}</span>
               <span><strong>Período:</strong> {rangoTexto}</span>
               <span><strong>Generado:</strong> {formatearFecha(new Date())}</span>
