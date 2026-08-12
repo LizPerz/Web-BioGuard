@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PublicHeader } from '../../components/layout/PublicHeader';
 import { PricingCard } from '../../components/pricing/PricingCard';
 import { plans } from '../../data/mockData';
 import './Landing.css';
 
 export function Landing() {
+  const navigate = useNavigate();
+
+  const handleSelectPlan = (planName: string) => {
+    navigate('/register', { state: { plan: planName } });
+  };
+
   return (
     <div className="landing">
       <PublicHeader />
@@ -36,6 +42,7 @@ export function Landing() {
               period="/mes"
               benefits={plan.benefits}
               recommended={plan.recommended}
+              onSelect={() => handleSelectPlan(plan.name)}
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { type InputHTMLAttributes, forwardRef, useRef } from 'react';
 import './inputs.css';
 
 interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -80,19 +80,25 @@ interface CodeInputProps {
 }
 
 export function CodeInput({ length = 6, value, onChange }: CodeInputProps) {
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+
   const handleChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 1);
     onChange(index, val);
     if (val && index < length - 1) {
-      const next = e.target.parentElement?.parentElement?.children[index + 1]?.querySelector('input');
-      next?.focus();
+      inputsRef.current[index + 1]?.focus();
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !value[index] && index > 0) {
-      const prev = e.currentTarget.parentElement?.parentElement?.children[index - 1]?.querySelector('input');
-      prev?.focus();
+      inputsRef.current[index - 1]?.focus();
+    }
+    if (e.key === 'ArrowLeft' && index > 0) {
+      inputsRef.current[index - 1]?.focus();
+    }
+    if (e.key === 'ArrowRight' && index < length - 1) {
+      inputsRef.current[index + 1]?.focus();
     }
   };
 
@@ -102,6 +108,8 @@ export function CodeInput({ length = 6, value, onChange }: CodeInputProps) {
     pasted.split('').forEach((char, i) => {
       onChange(i, char);
     });
+    const nextIndex = Math.min(pasted.length, length - 1);
+    inputsRef.current[nextIndex]?.focus();
   };
 
   return (
@@ -109,8 +117,12 @@ export function CodeInput({ length = 6, value, onChange }: CodeInputProps) {
       {Array.from({ length }, (_, i) => (
         <input
           key={i}
+          ref={(el) => {
+            inputsRef.current[i] = el;
+          }}
           type="text"
           inputMode="numeric"
+          autoComplete="one-time-code"
           maxLength={1}
           className="code-input__field"
           value={value[i] || ''}

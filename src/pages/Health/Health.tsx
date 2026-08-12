@@ -3,6 +3,7 @@ import {
   HeartPulse, Thermometer, Droplets, Brain, FileText,
   Activity, Pill
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { SecondaryButton } from '../../components/ui/buttons';
@@ -14,6 +15,7 @@ import './Health.css';
 
 export function Health() {
   const [period, setPeriod] = useState('7d');
+  const navigate = useNavigate();
 
   const iconSize = 16;
 
@@ -34,7 +36,7 @@ export function Health() {
           value={period}
           onChange={setPeriod}
         />
-        <SecondaryButton disabled>
+        <SecondaryButton onClick={() => navigate('/reportes')}>
           <FileText size={14} strokeWidth={1.8} />
           Generar reporte completo
         </SecondaryButton>

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { HeartPulse, Thermometer, Droplets, Brain } from 'lucide-react';
 import { StatusBadge } from './badges';
 import './metric-card.css';
@@ -18,11 +18,28 @@ interface MetricCardProps {
   value: string;
   unit: string;
   hasData: boolean;
+  onClick?: () => void;
 }
 
-export function MetricCard({ icon, iconBg, iconColor, label, value, unit, hasData }: MetricCardProps) {
+export function MetricCard({ icon, iconBg, iconColor, label, value, unit, hasData, onClick }: MetricCardProps) {
+  const interactive = Boolean(onClick);
   return (
-    <div className="metric-card">
+    <div
+      className={`metric-card ${interactive ? 'metric-card--interactive' : ''}`}
+      onClick={onClick}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+    >
       <div className="metric-card__header">
         <div
           className="metric-card__icon-box"

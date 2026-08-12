@@ -15,16 +15,26 @@
 .auth-layout__logo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 17px;
+  gap: 10px;
+  font-size: 24px;
   font-weight: 800;
+  font-style: italic;
   color: var(--text-primary);
   text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.auth-layout__logo-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .auth-layout__logo-img {
-  height: 26px;
+  height: 52px;
   width: auto;
+  filter: drop-shadow(0 0 10px rgba(8, 216, 242, 0.25));
 }
 
 .auth-layout__main {
@@ -47,10 +57,10 @@
     padding: 14px 16px;
   }
   .auth-layout__logo {
-    font-size: 17px;
+    font-size: 21px;
   }
   .auth-layout__logo-img {
-    height: 26px;
+    height: 42px;
   }
   .auth-layout__main {
     padding: 20px 14px;

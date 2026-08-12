@@ -125,7 +125,7 @@
 }
 
 .health__ai-box {
-  background: #0C1624;
+  background: var(--bg-input);
   border-radius: var(--radius-field);
   padding: var(--space-12);
   margin-top: var(--space-4);

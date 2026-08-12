@@ -33,8 +33,9 @@ export const plans: Plan[] = [
     yearlyPrice: 'Gratis',
     benefits: [
       '1 paciente',
-      '0 cuidadores',
-      'Historial 30 días',
+      '2 cuidadores',
+      'Reporte diario',
+      'Historial 7 días',
       'Alertas inteligentes',
     ],
     recommended: false,
@@ -47,7 +48,8 @@ export const plans: Plan[] = [
     yearlyPrice: '$8',
     benefits: [
       '1 paciente',
-      '3 cuidadores',
+      '4 cuidadores',
+      'Reporte diario',
       'Historial 15 días',
       'Alertas inteligentes',
     ],
@@ -62,6 +64,7 @@ export const plans: Plan[] = [
     benefits: [
       '1 paciente',
       '6 cuidadores',
+      'Reporte diario',
       'Historial 30 días',
       'GPS continuo',
       'Consola IA',
@@ -98,14 +101,14 @@ export const subscriptionFeatures = [
 export const navItems = [
   { path: '/dashboard', label: 'Panel', icon: 'LayoutGrid' },
   { path: '/health', label: 'Salud', icon: 'Heart' },
-  { path: '/security', label: 'Seguridad', icon: 'Lock' },
-  { path: '/billing', label: 'Facturación', icon: 'CreditCard' },
+  { path: '/pacientes', label: 'Pacientes y Cuidadores', icon: 'Users' },
 ] as const;
 
 export const pageTitles: Record<string, string> = {
   '/dashboard': 'Panel Principal',
   '/health': 'Análisis Clínico y Reportes',
-  '/security': 'Centro de Seguridad',
+  '/reportes': 'Reportes de Salud',
+  '/pacientes': 'Pacientes y Cuidadores',
   '/billing': 'Centro de Facturación',
   '/settings': 'Ajustes',
 };
