@@ -20,18 +20,21 @@ import { ContentCard } from '../../components/ui/ContentCard';
 import { StatusBadge } from '../../components/ui/badges';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { PrediccionMlCard } from '../../components/ml/PrediccionMlCard';
 import {
   getMiPaciente,
   getMiPlan,
   getLecturasRango,
   getEventos,
   getHistorialAlertas,
+  getPredicciones,
   ApiError,
   type PacienteResponse,
   type PlanResponse,
   type LecturaResponse,
   type EventoResponse,
   type AlertaResponse,
+  type PrediccionMlResponse,
 } from '../../lib/api';
 import './Reportes.css';
 
@@ -112,6 +115,9 @@ export function Reportes() {
   const [generando, setGenerando] = useState(false);
   const [reporte, setReporte] = useState<ReporteDatos | null>(null);
   const [rangoTexto, setRangoTexto] = useState('');
+  
+  const [predicciones, setPredicciones] = useState<PrediccionMlResponse[]>([]);
+  const [cargandoPredicciones, setCargandoPredicciones] = useState(false);
 
   const maxDias = plan?.diasHistorial && plan.diasHistorial > 0 ? plan.diasHistorial : 7;
 
@@ -190,11 +196,28 @@ export function Reportes() {
         alertas: alertasFiltradas,
       });
       setRangoTexto(texto);
+      
+      // Cargar predicciones ML
+      await cargarPredicciones();
     } catch (err) {
       setError(errMsg(err));
       setReporte(null);
     } finally {
       setGenerando(false);
+    }
+  };
+
+  const cargarPredicciones = async () => {
+    if (!paciente) return;
+    setCargandoPredicciones(true);
+    try {
+      const preds = await getPredicciones(paciente.id);
+      setPredicciones(preds);
+    } catch (err) {
+      console.warn('Error cargando predicciones ML:', err);
+      setPredicciones([]);
+    } finally {
+      setCargandoPredicciones(false);
     }
   };
 
@@ -440,6 +463,24 @@ export function Reportes() {
               </div>
             </ContentCard>
           )}
+
+          {/* Sección de Predicciones ML */}
+          {cargandoPredicciones ? (
+            <ContentCard className="reportes__ml-card">
+              <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Cargando análisis ML...</p>
+            </ContentCard>
+          ) : predicciones && predicciones.length > 0 ? (
+            <div className="reportes__ml-section">
+              <h3 style={{ marginBottom: 16, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                📊 Análisis ML - Predicciones de Pico Glucémico
+              </h3>
+              <div className="reportes__ml-grid">
+                {predicciones.slice(0, 5).map((pred) => (
+                  <PrediccionMlCard key={pred.id} prediccion={pred} />
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="reportes__dos-col">
             {metricas.totalEventos > 0 && (

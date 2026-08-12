@@ -474,3 +474,27 @@ export function getEventos(pacienteId: string, limite = 500): Promise<EventoResp
 export function getHistorialAlertas(pacienteId: string, limite = 500): Promise<AlertaResponse[]> {
   return request<AlertaResponse[]>(`/api/Reportes/historial-alertas/${pacienteId}?limite=${limite}`);
 }
+
+// ── Predicciones ML ──────────────────────────────────────
+
+export interface PrediccionMlResponse {
+  id: string;
+  pacienteId: string;
+  probabilidadPico: number;
+  nivelRiesgo: string;
+  casoClinico: string;
+  imc: number;
+  z: number;
+  pPico: number;
+  accionAutomatizada?: string;
+  modeloVersion: string;
+  fechaPrediccion: string;
+}
+
+export function getPredicciones(pacienteId: string): Promise<PrediccionMlResponse[]> {
+  return request<PrediccionMlResponse[]>(`/api/Sensores/predicciones/${pacienteId}`);
+}
+
+export function getPrediccionActual(pacienteId: string): Promise<PrediccionMlResponse> {
+  return request<PrediccionMlResponse>(`/api/Sensores/predicciones/${pacienteId}/actual`);
+}

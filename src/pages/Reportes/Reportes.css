@@ -320,3 +320,30 @@
     page-break-inside: avoid;
   }
 }
+
+/* ML Predicciones Section */
+.reportes__ml-section {
+  margin: 24px 0;
+}
+
+.reportes__ml-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.reportes__ml-card {
+  text-align: center;
+  padding: 24px;
+}
+
+@media print {
+  .reportes__ml-section {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  .reportes__ml-grid {
+    grid-template-columns: 1fr;
+  }
+}
