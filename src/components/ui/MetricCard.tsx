@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { HeartPulse, Thermometer, Droplets, Brain } from 'lucide-react';
+import { HeartPulse, Thermometer, Droplets, Brain, Activity, Footprints } from 'lucide-react';
 import { StatusBadge } from './badges';
 import './metric-card.css';
 
@@ -8,6 +8,8 @@ const iconMap: Record<string, ReactNode> = {
   Thermometer: <Thermometer size={20} strokeWidth={1.8} />,
   Droplets: <Droplets size={20} strokeWidth={1.8} />,
   Brain: <Brain size={20} strokeWidth={1.8} />,
+  Activity: <Activity size={20} strokeWidth={1.8} />,
+  Footprints: <Footprints size={20} strokeWidth={1.8} />,
 };
 
 interface MetricCardProps {

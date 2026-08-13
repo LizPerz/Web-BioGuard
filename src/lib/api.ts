@@ -444,6 +444,8 @@ export interface LecturaResponse {
   temperaturaC: number;
   sudoracionGsr: number;
   probabilidadPico: number;
+  pasos?: number | null;
+  glucosaEstimadaMgDl?: number | null;
   timestamp: string;
 }
 

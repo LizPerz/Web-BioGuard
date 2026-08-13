@@ -46,7 +46,7 @@ function agruparPorHora(lecturas: LecturaResponse[], select: (l: LecturaResponse
 export function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const iconKeys = ['HeartPulse', 'Thermometer', 'Droplets', 'Brain'] as const;
+  const iconKeys = ['HeartPulse', 'Thermometer', 'Droplets', 'Brain', 'Activity', 'Footprints'] as const;
 
   const session = getUser();
   const firstName = session?.nombre?.split(' ')[0] ?? mockUser.firstName;
@@ -108,12 +108,16 @@ export function Dashboard() {
   }, [paciente, cargarLecturas]);
 
   const metricas = useMemo(() => {
-    if (lecturas.length === 0) return { pulso: null, temp: null, gsr: null, riesgo: null };
+    if (lecturas.length === 0) return { pulso: null, temp: null, gsr: null, riesgo: null, glucosa: null, pasos: null };
+    const conGlucosa = lecturas.filter((l) => l.glucosaEstimadaMgDl && l.glucosaEstimadaMgDl > 0);
+    const conPasos = lecturas.filter((l) => l.pasos && l.pasos > 0);
     return {
       pulso: lecturas.reduce((s, l) => s + l.pulsoBpm, 0) / lecturas.length,
       temp: lecturas.reduce((s, l) => s + l.temperaturaC, 0) / lecturas.length,
       gsr: lecturas.reduce((s, l) => s + l.sudoracionGsr, 0) / lecturas.length,
       riesgo: Math.max(...lecturas.map((l) => l.probabilidadPico)),
+      glucosa: conGlucosa.length > 0 ? conGlucosa[0].glucosaEstimadaMgDl! : null,
+      pasos: conPasos.length > 0 ? Math.max(...conPasos.map((l) => l.pasos!)) : null,
     };
   }, [lecturas]);
 
@@ -153,6 +157,22 @@ export function Dashboard() {
       iconBg: 'var(--icon-bg-ai)',
       iconColor: 'var(--success)',
       hasData: metricas.riesgo != null,
+    },
+    {
+      label: 'GLUCOSA ESTIMADA',
+      value: metricas.glucosa != null ? formatearNumero(metricas.glucosa) : '--',
+      unit: 'mg/dL',
+      iconBg: 'var(--icon-bg-ai)',
+      iconColor: 'var(--danger)',
+      hasData: metricas.glucosa != null,
+    },
+    {
+      label: 'PASOS',
+      value: metricas.pasos != null ? formatearNumero(metricas.pasos, 0) : '--',
+      unit: 'pasos',
+      iconBg: 'var(--icon-bg-sweat)',
+      iconColor: 'var(--purple)',
+      hasData: metricas.pasos != null,
     },
   ];
 
