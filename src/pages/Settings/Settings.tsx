@@ -18,6 +18,7 @@ import {
   cambiarPassword,
   eliminarMiCuenta,
   ApiError,
+  type MiPerfilResponse,
 } from '../../lib/api';
 import './Settings.css';
 
@@ -102,30 +103,41 @@ export function Settings() {
 
   const sessionName = session?.nombre || `${firstName} ${lastName}`.trim() || 'Mi cuenta';
 
+  const applyProfile = useCallback((perfil: MiPerfilResponse) => {
+    const partes = (perfil.nombre ?? '').split(/\s+/).filter(Boolean);
+    const primerNombre = partes.shift() ?? '';
+    const restoNombre = partes.join(' ');
+    const apellidoPaterno = (perfil.apellidoPaterno ?? '').trim() || restoNombre;
+    const apellidoMaterno = perfil.apellidoMaterno ?? '';
+    setFirstName(primerNombre);
+    setLastName(apellidoPaterno);
+    setMaternalLastName(apellidoMaterno);
+    setCurrentEmail(perfil.correo ?? '');
+    setFotoPerfil(perfil.fotoPerfil ?? null);
+    updateSessionUser({
+      nombre: [primerNombre, apellidoPaterno, apellidoMaterno].filter(Boolean).join(' '),
+      correo: perfil.correo,
+      fotoPerfil: perfil.fotoPerfil ?? null,
+    });
+  }, []);
+
   useEffect(() => {
     let active = true;
-    getMiPerfil()
-      .then((perfil) => {
-        if (!active) return;
-        const nombre = perfil.nombre ?? '';
-        const apellido = perfil.apellidoPaterno ?? '';
-        setFirstName(nombre.split(' ')[0] ?? '');
-        setLastName(apellido);
-        setMaternalLastName(perfil.apellidoMaterno ?? '');
-        setCurrentEmail(perfil.correo ?? '');
-        setFotoPerfil(perfil.fotoPerfil ?? null);
-        updateSessionUser({
-          nombre: `${nombre} ${apellido}`.trim(),
-          correo: perfil.correo,
-          fotoPerfil: perfil.fotoPerfil ?? null,
+    const cargar = () => {
+      if (document.activeElement?.tagName === 'INPUT') return;
+      getMiPerfil()
+        .then((perfil) => {
+          if (active) applyProfile(perfil);
+        })
+        .catch(() => { /* si no hay sesión válida, se dejan los valores actuales */ })
+        .finally(() => {
+          if (active) setLoadingProfile(false);
         });
-      })
-      .catch(() => { /* si no hay sesión válida, se dejan los valores actuales */ })
-      .finally(() => {
-        if (active) setLoadingProfile(false);
-      });
-    return () => { active = false; };
-  }, []);
+    };
+    cargar();
+    const intervalo = setInterval(cargar, 30000);
+    return () => { active = false; clearInterval(intervalo); };
+  }, [applyProfile]);
 
   useEffect(() => {
     if (location.hash) {
@@ -184,8 +196,8 @@ export function Settings() {
 
   const guardarPerfil = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !lastName.trim()) {
-      setPerfilFeed({ status: 'error', message: 'Nombre y apellido paterno son obligatorios' });
+    if (!firstName.trim()) {
+      setPerfilFeed({ status: 'error', message: 'El nombre es obligatorio' });
       return;
     }
     setSavingPerfil(true);
@@ -196,7 +208,7 @@ export function Settings() {
         ApellidoPaterno: lastName.trim(),
         ApellidoMaterno: maternalLastName.trim(),
       });
-      const nombreCompleto = `${firstName.trim()} ${lastName.trim()}`.trim();
+      const nombreCompleto = [firstName.trim(), lastName.trim(), maternalLastName.trim()].filter(Boolean).join(' ');
       updateSessionUser({ nombre: nombreCompleto });
       setPerfilFeed({ status: 'success', message: 'Perfil actualizado correctamente' });
     } catch (err) {
