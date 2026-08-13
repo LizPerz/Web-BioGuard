@@ -186,6 +186,13 @@ export interface MiPerfilResponse {
   fotoPerfil?: string | null;
 }
 
+export function fotoSrc(foto?: string | null): string | undefined {
+  if (!foto || foto.trim() === '') return undefined;
+  const recorte = foto.trim();
+  if (recorte.startsWith('data:')) return recorte;
+  return `data:image/jpeg;base64,${recorte}`;
+}
+
 export function getMiPerfil(): Promise<MiPerfilResponse> {
   return request<MiPerfilResponse>('/api/UsuariosWeb/mi-perfil');
 }
@@ -252,6 +259,7 @@ export interface PacienteResponse {
   familiaresDiabetes?: boolean;
   actividadFisica?: string | null;
   codigoAccesoQr?: string | null;
+  foto?: string | null;
 }
 
 export interface CrearPacientePayload {
@@ -318,6 +326,7 @@ export interface CuidadorResponse {
   pacienteId?: string;
   telefono?: string;
   correo?: string;
+  foto?: string | null;
 }
 
 export interface CrearCuidadorPayload {

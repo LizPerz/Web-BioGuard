@@ -62,6 +62,15 @@
   flex-shrink: 0;
 }
 
+.pacientes__patient-photo {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
 .pacientes__patient-details {
   display: flex;
   flex-direction: column;
@@ -138,6 +147,15 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.pacientes__caregiver-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
 }
 
 .pacientes__caregiver-info {

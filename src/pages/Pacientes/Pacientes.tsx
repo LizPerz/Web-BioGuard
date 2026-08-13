@@ -24,6 +24,7 @@ import {
   getQrCuidador,
   regenerarQrCuidador,
   ApiError,
+  fotoSrc,
   type PacienteResponse,
   type CuidadorResponse,
 } from '../../lib/api';
@@ -350,9 +351,17 @@ export function Pacientes() {
             <p className="pacientes__loading">Cargando…</p>
           ) : paciente ? (
             <div className="pacientes__patient-info">
-              <div className="pacientes__patient-icon">
-                <UserRound size={26} strokeWidth={1.6} />
-              </div>
+              {paciente.foto ? (
+                <img
+                  className="pacientes__patient-photo"
+                  src={fotoSrc(paciente.foto)}
+                  alt={`Foto de ${paciente.nombre}`}
+                />
+              ) : (
+                <div className="pacientes__patient-icon">
+                  <UserRound size={26} strokeWidth={1.6} />
+                </div>
+              )}
               <div className="pacientes__patient-details">
                 <span className="pacientes__patient-name">{paciente.nombre}</span>
                 {paciente.esDiabetico && (
@@ -441,9 +450,17 @@ export function Pacientes() {
             <div className="pacientes__caregiver-grid">
               {cuidadores.map((c) => (
                 <ContentCard key={c.id} className="pacientes__caregiver">
-                  <div className="pacientes__caregiver-avatar">
-                    <UserRound size={20} strokeWidth={1.6} />
-                  </div>
+                  {c.foto ? (
+                    <img
+                      className="pacientes__caregiver-photo"
+                      src={fotoSrc(c.foto)}
+                      alt={`Foto de ${c.nombre}`}
+                    />
+                  ) : (
+                    <div className="pacientes__caregiver-avatar">
+                      <UserRound size={20} strokeWidth={1.6} />
+                    </div>
+                  )}
                   <div className="pacientes__caregiver-info">
                     <span className="pacientes__caregiver-name">{c.nombre}</span>
                     <span className="pacientes__caregiver-relation">{c.parentesco}</span>

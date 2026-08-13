@@ -1,166 +1,349 @@
-.health__controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-  margin-bottom: var(--space-20);
-  flex-wrap: wrap;
-}
-
-.health__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.reportes__controls {
   margin-bottom: 20px;
 }
 
-.health__row--uneven {
-  grid-template-columns: 2fr 1fr;
+.reportes__controls-card {
+  padding: 18px;
 }
 
-.health__card-top {
+.reportes__controls-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: var(--space-16);
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.health__card-title-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.health__card-title-row h3 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.health__metric-value {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  margin-bottom: var(--space-4);
-}
-
-.health__big-value {
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.health__big-unit {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-tertiary);
-}
-
-.health__avg {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  font-weight: 500;
-}
-
-.health__gsr-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-20);
-}
-
-.health__gsr-circle {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  border: 3px solid var(--border-input);
+.reportes__period,
+.reportes__fecha {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: rgba(168, 118, 245, 0.05);
+  gap: 8px;
 }
 
-.health__gsr-value {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.health__gsr-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-  letter-spacing: 0.05em;
-}
-
-.health__gsr-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-10);
-}
-
-.health__gsr-info div {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.health__gsr-info-label {
+.reportes__controls-label {
   font-size: 11px;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
 }
 
-.health__gsr-info-val {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.health__ai-box {
-  background: var(--bg-input);
-  border-radius: var(--radius-field);
-  padding: var(--space-12);
-  margin-top: var(--space-4);
-  min-height: 90px;
+.reportes__fecha-input {
   display: flex;
   align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-field);
+  padding: 0 12px;
+  height: 40px;
+  color: var(--text-secondary);
 }
 
-.health__ai-box p {
+.reportes__fecha-input input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0;
+}
+
+.reportes__fecha-input input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.reportes__plan-hint {
+  margin-top: 14px;
   font-size: 12px;
   color: var(--text-tertiary);
   line-height: 1.5;
 }
 
+.reportes__spin {
+  animation: reportes-rot 0.8s linear infinite;
+}
+
+@keyframes reportes-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.reportes__print-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reportes__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, rgba(45, 134, 255, 0.08), rgba(22, 199, 186, 0.08));
+  border: 1px solid rgba(45, 134, 255, 0.18);
+  flex-wrap: wrap;
+}
+
+.reportes__header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reportes__header-logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.reportes__header-sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.reportes__header-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, auto));
+  gap: 6px 28px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.reportes__header-meta strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.reportes__kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.reportes__kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-card);
+  padding: 16px;
+}
+
+.reportes__kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.reportes__kpi-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.reportes__kpi-value small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.reportes__tabla-card,
+.reportes__lista-card {
+  padding: 18px;
+}
+
+.reportes__card-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.reportes__card-title-row h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reportes__tabla-wrap {
+  overflow-x: auto;
+}
+
+.reportes__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.reportes__tabla th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border-main);
+  white-space: nowrap;
+}
+
+.reportes__tabla td {
+  padding: 9px 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-faint, rgba(128, 128, 128, 0.12));
+  white-space: nowrap;
+}
+
+.reportes__tabla-grupo {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reportes__dos-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.reportes__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reportes__lista-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-field);
+  font-size: 13px;
+}
+
+.reportes__lista-hora {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  min-width: 44px;
+}
+
+.reportes__lista-desc {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.reportes__sin-atender {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--warning, #d97706);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reportes__footer {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding-top: 4px;
+}
+
 @media (max-width: 1023px) {
-  .health__row,
-  .health__row--uneven {
+  .reportes__kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .reportes__dos-col {
     grid-template-columns: 1fr;
   }
-  .health__gsr-row {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .health__gsr-circle {
-    width: 84px;
-    height: 84px;
+  .reportes__header-meta {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
-  .health__controls {
-    flex-direction: column;
+  .reportes__kpi-grid {
+    grid-template-columns: 1fr;
   }
-  .health__big-value {
-    font-size: 26px;
+  .reportes__controls-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .reportes__print-area,
+  .reportes__print-area * {
+    visibility: visible;
+  }
+  .reportes__print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    gap: 14px;
+  }
+  .reportes__print-area .reportes__kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .reportes__print-area .reportes__dos-col {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .reportes__print-area .reportes__tabla-card,
+  .reportes__print-area .reportes__lista-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* ML Predicciones Section */
+.reportes__ml-section {
+  margin: 24px 0;
+}
+
+.reportes__ml-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.reportes__ml-card {
+  text-align: center;
+  padding: 24px;
+}
+
+@media print {
+  .reportes__ml-section {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  .reportes__ml-grid {
+    grid-template-columns: 1fr;
   }
 }

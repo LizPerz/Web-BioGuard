@@ -7,7 +7,6 @@ import { Verify2FA } from './pages/Verify2FA/Verify2FA';
 import { ResetPassword } from './pages/ResetPassword/ResetPassword';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { Health } from './pages/Health/Health';
-import { Reportes } from './pages/Reportes/Reportes';
 import { Pacientes } from './pages/Pacientes/Pacientes';
 import { Billing } from './pages/Billing/Billing';
 import { SelectPlan } from './pages/Plans/SelectPlan';
@@ -27,7 +26,6 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/health" element={<Health />} />
-        <Route path="/reportes" element={<Reportes />} />
         <Route path="/pacientes" element={<Pacientes />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/planes" element={<SelectPlan />} />
