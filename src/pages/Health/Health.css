@@ -76,18 +76,35 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-card);
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .reportes__header {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 20px 22px;
+  padding: 20px 22px 18px;
   border-radius: var(--radius-card);
-  background: linear-gradient(135deg, rgba(45, 134, 255, 0.08), rgba(22, 199, 186, 0.08));
-  border: 1px solid rgba(45, 134, 255, 0.18);
+  background: linear-gradient(135deg, rgba(45, 134, 255, 0.1), rgba(22, 199, 186, 0.1));
+  border: 1px solid rgba(45, 134, 255, 0.22);
   flex-wrap: wrap;
+}
+
+.reportes__header::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, #2d86ff, #16c7ba);
+  opacity: 0.55;
 }
 
 .reportes__header-brand {
@@ -179,6 +196,18 @@
   color: var(--text-primary);
 }
 
+.reportes__tabla-card h3,
+.reportes__lista-card h3,
+.reportes__ml-section h3 {
+  padding-left: 10px;
+  border-left: 3px solid var(--accent, #2d86ff);
+  line-height: 1.25;
+}
+
+.reportes__tabla tbody tr:nth-child(even) {
+  background: var(--bg-input);
+}
+
 .reportes__tabla-wrap {
   overflow-x: auto;
 }
@@ -206,6 +235,11 @@
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-faint, rgba(128, 128, 128, 0.12));
   white-space: nowrap;
+}
+
+.reportes__tabla td:first-child {
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .reportes__tabla-grupo {
@@ -287,6 +321,11 @@
   }
 }
 
+@page {
+  size: A4;
+  margin: 18mm 15mm;
+}
+
 @media print {
   body {
     background: #fff;
@@ -304,7 +343,61 @@
     top: 0;
     width: 100%;
     padding: 0;
+    border: none;
+    box-shadow: none;
     gap: 14px;
+    color: #111;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .reportes__print-area h3,
+  .reportes__print-area .reportes__kpi-label,
+  .reportes__print-area .reportes__kpi-value,
+  .reportes__print-area .reportes__kpi-value small,
+  .reportes__print-area .reportes__tabla th,
+  .reportes__print-area .reportes__tabla td,
+  .reportes__print-area .reportes__tabla-grupo,
+  .reportes__print-area .reportes__lista-desc,
+  .reportes__print-area .reportes__header-meta,
+  .reportes__print-area .reportes__header-meta strong,
+  .reportes__print-area .reportes__header-logo,
+  .reportes__print-area .reportes__header-sub,
+  .reportes__print-area .reportes__footer {
+    color: #111 !important;
+  }
+  .reportes__print-area .reportes__header {
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid #2d86ff;
+    background: none;
+  }
+  .reportes__print-area .reportes__header::after {
+    display: none;
+  }
+  .reportes__print-area .reportes__kpi {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .reportes__print-area .reportes__tabla-card,
+  .reportes__print-area .reportes__lista-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+  .reportes__print-area .reportes__lista-item {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+  }
+  .reportes__print-area .reportes__tabla th {
+    border-bottom: 2px solid #111;
+  }
+  .reportes__print-area .reportes__tabla td {
+    border-bottom: 1px solid #ddd;
+  }
+  .reportes__print-area .reportes__tabla tbody tr:nth-child(even) {
+    background: #f7f8fa;
   }
   .reportes__print-area .reportes__kpi-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -314,10 +407,17 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
+  .reportes__print-area .reportes__ml-grid {
+    grid-template-columns: 1fr;
+  }
   .reportes__print-area .reportes__tabla-card,
   .reportes__print-area .reportes__lista-card {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+  .reportes__footer {
+    border-top: 1px solid #ddd;
+    padding-top: 8px;
   }
 }
 

@@ -27,7 +27,7 @@ import {
   getLecturasRango,
   getEventos,
   getHistorialAlertas,
-  getPredicciones,
+  getPrediccionActual,
   ApiError,
   type PacienteResponse,
   type PlanResponse,
@@ -117,7 +117,7 @@ export function Health() {
   const [reporte, setReporte] = useState<ReporteDatos | null>(null);
   const [rangoTexto, setRangoTexto] = useState('');
 
-  const [predicciones, setPredicciones] = useState<PrediccionMlResponse[]>([]);
+  const [prediccionActual, setPrediccionActual] = useState<PrediccionMlResponse | null>(null);
   const [cargandoPredicciones, setCargandoPredicciones] = useState(false);
 
   const maxDias = plan?.diasHistorial && plan.diasHistorial > 0 ? plan.diasHistorial : 7;
@@ -211,11 +211,11 @@ export function Health() {
     if (!paciente) return;
     setCargandoPredicciones(true);
     try {
-      const preds = await getPredicciones(paciente.id);
-      setPredicciones(preds);
+      const pred = await getPrediccionActual(paciente.id);
+      setPrediccionActual(pred);
     } catch (err) {
-      console.warn('Error cargando predicciones ML:', err);
-      setPredicciones([]);
+      console.warn('Error cargando predicción ML actual:', err);
+      setPrediccionActual(null);
     } finally {
       setCargandoPredicciones(false);
     }
@@ -466,15 +466,13 @@ export function Health() {
             <ContentCard className="reportes__ml-card">
               <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Cargando análisis ML...</p>
             </ContentCard>
-          ) : predicciones && predicciones.length > 0 ? (
+          ) : prediccionActual ? (
             <div className="reportes__ml-section">
               <h3 style={{ marginBottom: 16, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                📊 Análisis ML - Predicciones de Pico Glucémico
+                📊 Análisis ML - Predicción de Pico Glucémico
               </h3>
               <div className="reportes__ml-grid">
-                {predicciones.slice(0, 5).map((pred) => (
-                  <PrediccionMlCard key={pred.id} prediccion={pred} />
-                ))}
+                <PrediccionMlCard prediccion={prediccionActual} />
               </div>
             </div>
           ) : null}
