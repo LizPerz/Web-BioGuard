@@ -106,8 +106,7 @@ export const navItems = [
 
 export const pageTitles: Record<string, string> = {
   '/dashboard': 'Panel Principal',
-  '/health': 'Análisis Clínico y Reportes',
-  '/reportes': 'Reportes de Salud',
+  '/health': 'Reportes',
   '/pacientes': 'Pacientes y Cuidadores',
   '/billing': 'Centro de Facturación',
   '/settings': 'Ajustes',
