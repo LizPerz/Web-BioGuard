@@ -58,6 +58,7 @@ export function Dashboard() {
 
   const [lecturas, setLecturas] = useState<LecturaResponse[]>([]);
   const [cargandoLecturas, setCargandoLecturas] = useState(false);
+  const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
 
   const cargarPaciente = useCallback(async () => {
     try {
@@ -77,6 +78,7 @@ export function Dashboard() {
       const desde = new Date(hasta.getTime() - 24 * MS_HORA);
       const data = await getLecturasRango(pacienteId, desde.toISOString(), hasta.toISOString());
       setLecturas(data);
+      setUltimaActualizacion(new Date());
     } catch {
       setLecturas([]);
     } finally {
@@ -95,6 +97,14 @@ export function Dashboard() {
 
   useEffect(() => {
     if (paciente) cargarLecturas(paciente.id);
+  }, [paciente, cargarLecturas]);
+
+  useEffect(() => {
+    if (!paciente) return;
+    const id = window.setInterval(() => {
+      cargarLecturas(paciente.id);
+    }, 30_000);
+    return () => window.clearInterval(id);
   }, [paciente, cargarLecturas]);
 
   const metricas = useMemo(() => {
@@ -231,7 +241,11 @@ export function Dashboard() {
               <h3 className="dashboard__card-title">Monitoreo 24 Horas</h3>
               <p className="dashboard__card-subtitle">Pulso · Temperatura</p>
             </div>
-            <span className="dashboard__legend">24h</span>
+            <span className="dashboard__legend">
+              {ultimaActualizacion
+                ? `Act. ${ultimaActualizacion.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`
+                : '24h'}
+            </span>
           </div>
           {cargandoLecturas ? (
             <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Cargando lecturas…</p>
