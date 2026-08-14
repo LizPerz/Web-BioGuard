@@ -56,9 +56,9 @@ export function SimDashboard() {
           icon="Droplets"
           iconBg="var(--icon-bg-sweat)"
           iconColor="var(--purple)"
-          label="SUDORACIÓN"
-          value={hasData && summary.sudoracion.current !== null ? summary.sudoracion.current.toFixed(1) : '--'}
-          unit="µS"
+          label="ESTRÉS (HRV)"
+          value={hasData && summary.estres.current !== null ? summary.estres.current.toFixed(0) : '--'}
+          unit="%"
           hasData={hasData}
         />
         <MetricCard

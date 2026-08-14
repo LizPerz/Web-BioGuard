@@ -442,7 +442,7 @@ export interface LecturaResponse {
   id: string;
   pulsoBpm: number;
   temperaturaC: number;
-  sudoracionGsr: number;
+  estresPct: number;
   probabilidadPico: number;
   pasos?: number | null;
   glucosaEstimadaMgDl?: number | null;

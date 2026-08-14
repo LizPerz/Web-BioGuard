@@ -16,7 +16,7 @@ function createEmptySummary(): BiometricSummary {
   return {
     pulso: { current: null, avg: null, min: null, max: null, history: [] },
     temperatura: { current: null, avg: null, min: null, max: null, history: [] },
-    sudoracion: { current: null, avg: null, min: null, max: null, history: [] },
+    estres: { current: null, avg: null, min: null, max: null, history: [] },
     riesgoIA: { current: null, history: [] },
     totalLecturas: 0,
     ultimaLectura: null,
@@ -40,7 +40,7 @@ function updateSummary(prev: BiometricSummary, lectura: LecturaSensores): Biomet
 
   const newPulso = [...prev.pulso.history, lectura.bpm].slice(-maxHistory);
   const newTemp = [...prev.temperatura.history, lectura.temperatura].slice(-maxHistory);
-  const newGsr = [...prev.sudoracion.history, lectura.sudoracionGsr].slice(-maxHistory);
+  const newEstres = [...prev.estres.history, lectura.estresPct].slice(-maxHistory);
   const newRiesgo = [...prev.riesgoIA.history, riesgo].slice(-maxHistory);
 
   return {
@@ -54,10 +54,10 @@ function updateSummary(prev: BiometricSummary, lectura: LecturaSensores): Biomet
       ...calcStats(newTemp),
       history: newTemp,
     },
-    sudoracion: {
-      current: lectura.sudoracionGsr,
-      ...calcStats(newGsr),
-      history: newGsr,
+    estres: {
+      current: lectura.estresPct,
+      ...calcStats(newEstres),
+      history: newEstres,
     },
     riesgoIA: {
       current: riesgo,

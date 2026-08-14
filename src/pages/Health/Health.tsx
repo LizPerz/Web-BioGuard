@@ -229,7 +229,7 @@ export function Health() {
       totalLecturas: lecturas.length,
       promedioPulso: lecturas.length ? lecturas.reduce((s, l) => s + l.pulsoBpm, 0) / lecturas.length : null,
       promedioTemp: lecturas.length ? lecturas.reduce((s, l) => s + l.temperaturaC, 0) / lecturas.length : null,
-      promedioGsr: lecturas.length ? lecturas.reduce((s, l) => s + l.sudoracionGsr, 0) / lecturas.length : null,
+      promedioEstres: lecturas.length ? lecturas.reduce((s, l) => s + l.estresPct, 0) / lecturas.length : null,
       riesgoMax: lecturas.length ? Math.max(...lecturas.map((l) => l.probabilidadPico)) : null,
       totalEventos: eventos.length,
       criticos: eventos.filter((e) => e.nivelRiesgo === 'Critico').length,
@@ -254,7 +254,7 @@ export function Health() {
           count: items.length,
           pulso: items.reduce((s, l) => s + l.pulsoBpm, 0) / items.length,
           temp: items.reduce((s, l) => s + l.temperaturaC, 0) / items.length,
-          gsr: items.reduce((s, l) => s + l.sudoracionGsr, 0) / items.length,
+          estres: items.reduce((s, l) => s + l.estresPct, 0) / items.length,
           riesgo: Math.max(...items.map((l) => l.probabilidadPico)),
         }));
     }
@@ -271,7 +271,7 @@ export function Health() {
         count: items.length,
         pulso: items.reduce((s, l) => s + l.pulsoBpm, 0) / items.length,
         temp: items.reduce((s, l) => s + l.temperaturaC, 0) / items.length,
-        gsr: items.reduce((s, l) => s + l.sudoracionGsr, 0) / items.length,
+        estres: items.reduce((s, l) => s + l.estresPct, 0) / items.length,
         riesgo: Math.max(...items.map((l) => l.probabilidadPico)),
       }));
   }, [reporte]);
@@ -406,8 +406,8 @@ export function Health() {
             </div>
             <div className="reportes__kpi">
               <Droplets size={17} strokeWidth={1.8} style={{ color: 'var(--purple)' }} />
-              <span className="reportes__kpi-label">Sudoración promedio</span>
-              <span className="reportes__kpi-value">{metricas.promedioGsr != null ? formatearNumero(metricas.promedioGsr, 2) : '—'} <small>µS</small></span>
+              <span className="reportes__kpi-label">Estrés promedio</span>
+              <span className="reportes__kpi-value">{metricas.promedioEstres != null ? formatearNumero(metricas.promedioEstres, 0) : '—'} <small>%</small></span>
             </div>
             <div className="reportes__kpi">
               <Activity size={17} strokeWidth={1.8} style={{ color: 'var(--warning)' }} />
@@ -441,7 +441,7 @@ export function Health() {
                       <th>Lecturas</th>
                       <th>Pulso prom.</th>
                       <th>Temp. prom.</th>
-                      <th>GSR prom.</th>
+                      <th>Estrés prom.</th>
                       <th>Riesgo máx.</th>
                     </tr>
                   </thead>
@@ -452,7 +452,7 @@ export function Health() {
                         <td>{f.count}</td>
                         <td>{formatearNumero(f.pulso)} BPM</td>
                         <td>{formatearNumero(f.temp, 2)} °C</td>
-                        <td>{formatearNumero(f.gsr, 2)} µS</td>
+                        <td>{formatearNumero(f.estres, 0)} %</td>
                         <td>{formatearNumero(f.riesgo * 100)}%</td>
                       </tr>
                     ))}
