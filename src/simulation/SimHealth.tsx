@@ -92,16 +92,16 @@ export function SimHealth() {
           <div className="health__card-top">
             <div className="health__card-title-row">
               <Droplets size={iconSize} strokeWidth={1.8} style={{ color: 'var(--purple)' }} />
-              <h3>Sudoración</h3>
+              <h3>Estrés (HRV)</h3>
             </div>
             <StatusBadge label={hasData ? 'En vivo' : 'Sin datos'} variant={hasData ? 'success' : 'neutral'} />
           </div>
           <div className="health__gsr-row">
             <div className="health__gsr-circle">
               <span className="health__gsr-value">
-                {hasData ? summary.sudoracion.current?.toFixed(0) : '--'}
+                {hasData ? summary.estres.current?.toFixed(0) : '--'}
               </span>
-              <span className="health__gsr-label">GSR</span>
+              <span className="health__gsr-label">Estrés %</span>
             </div>
             <div className="health__gsr-info">
               <div>
@@ -113,7 +113,7 @@ export function SimHealth() {
               <div>
                 <span className="health__gsr-info-label">Promedio</span>
                 <span className="health__gsr-info-val">
-                  {hasData ? summary.sudoracion.avg?.toFixed(1) + ' µS' : 'Sin datos'}
+                  {hasData ? summary.estres.avg?.toFixed(1) + ' %' : 'Sin datos'}
                 </span>
               </div>
               <div>
@@ -157,7 +157,7 @@ export function SimHealth() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {summary.historial.filter(l => l.nivelRiesgo === 'Estres Alto').slice(-3).map((l, i) => (
                 <div key={i} style={{ fontSize: 12, color: 'var(--danger)', padding: '6px 10px', background: 'rgba(255,79,95,0.08)', borderRadius: 8 }}>
-                  Pico detectado: BPM {l.bpm}, GSR {l.sudoracionGsr} µS — {new Date(l.timestamp).toLocaleTimeString()}
+                  Pico detectado: BPM {l.bpm}, Estrés {l.estresPct} % — {new Date(l.timestamp).toLocaleTimeString()}
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
 export interface LecturaSensores {
   bpm: number;
   temperatura: number;
-  sudoracionGsr: number;
+  estresPct: number;
   nivelRiesgo: 'Relajado' | 'Estres Moderado' | 'Estres Alto';
   timestamp: number;
 }
@@ -19,7 +19,7 @@ export interface HeartbeatData {
 export interface BiometricSummary {
   pulso: { current: number | null; avg: number | null; min: number | null; max: number | null; history: number[] };
   temperatura: { current: number | null; avg: number | null; min: number | null; max: number | null; history: number[] };
-  sudoracion: { current: number | null; avg: number | null; min: number | null; max: number | null; history: number[] };
+  estres: { current: number | null; avg: number | null; min: number | null; max: number | null; history: number[] };
   riesgoIA: { current: number | null; history: number[] };
   totalLecturas: number;
   ultimaLectura: LecturaSensores | null;

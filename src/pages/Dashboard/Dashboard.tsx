@@ -108,13 +108,13 @@ export function Dashboard() {
   }, [paciente, cargarLecturas]);
 
   const metricas = useMemo(() => {
-    if (lecturas.length === 0) return { pulso: null, temp: null, gsr: null, riesgo: null, glucosa: null, pasos: null };
+    if (lecturas.length === 0) return { pulso: null, temp: null, estres: null, riesgo: null, glucosa: null, pasos: null };
     const conGlucosa = lecturas.filter((l) => l.glucosaEstimadaMgDl && l.glucosaEstimadaMgDl > 0);
     const conPasos = lecturas.filter((l) => l.pasos && l.pasos > 0);
     return {
       pulso: lecturas.reduce((s, l) => s + l.pulsoBpm, 0) / lecturas.length,
       temp: lecturas.reduce((s, l) => s + l.temperaturaC, 0) / lecturas.length,
-      gsr: lecturas.reduce((s, l) => s + l.sudoracionGsr, 0) / lecturas.length,
+      estres: lecturas.reduce((s, l) => s + l.estresPct, 0) / lecturas.length,
       riesgo: Math.max(...lecturas.map((l) => l.probabilidadPico)),
       glucosa: conGlucosa.length > 0 ? conGlucosa[0].glucosaEstimadaMgDl! : null,
       pasos: conPasos.length > 0 ? Math.max(...conPasos.map((l) => l.pasos!)) : null,
@@ -143,12 +143,12 @@ export function Dashboard() {
       hasData: metricas.temp != null,
     },
     {
-      label: 'SUDORACIÓN',
-      value: metricas.gsr != null ? formatearNumero(metricas.gsr, 2) : '--',
-      unit: 'µS',
+      label: 'ESTRÉS (HRV)',
+      value: metricas.estres != null ? formatearNumero(metricas.estres, 0) : '--',
+      unit: '%',
       iconBg: 'var(--icon-bg-sweat)',
       iconColor: 'var(--purple)',
-      hasData: metricas.gsr != null,
+      hasData: metricas.estres != null,
     },
     {
       label: 'RIESGO IA',
