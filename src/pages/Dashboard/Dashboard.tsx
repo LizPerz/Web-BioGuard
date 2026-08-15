@@ -111,18 +111,24 @@ export function Dashboard() {
     if (lecturas.length === 0) return { pulso: null, temp: null, estres: null, riesgo: null, glucosa: null, pasos: null };
     const conGlucosa = lecturas.filter((l) => l.glucosaEstimadaMgDl && l.glucosaEstimadaMgDl > 0);
     const conPasos = lecturas.filter((l) => l.pasos && l.pasos > 0);
+    const ultima = (arr: LecturaResponse[]) =>
+      [...arr].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
     return {
       pulso: lecturas.reduce((s, l) => s + l.pulsoBpm, 0) / lecturas.length,
       temp: lecturas.reduce((s, l) => s + l.temperaturaC, 0) / lecturas.length,
       estres: lecturas.reduce((s, l) => s + l.estresPct, 0) / lecturas.length,
-      riesgo: Math.max(...lecturas.map((l) => l.probabilidadPico)),
-      glucosa: conGlucosa.length > 0 ? conGlucosa[0].glucosaEstimadaMgDl! : null,
+      riesgo: ultima(lecturas).probabilidadPico,
+      glucosa: conGlucosa.length > 0 ? ultima(conGlucosa).glucosaEstimadaMgDl! : null,
       pasos: conPasos.length > 0 ? Math.max(...conPasos.map((l) => l.pasos!)) : null,
     };
   }, [lecturas]);
 
   const seriesPulso = useMemo(() => agruparPorHora(lecturas, (l) => l.pulsoBpm), [lecturas]);
   const seriesTemp = useMemo(() => agruparPorHora(lecturas, (l) => l.temperaturaC), [lecturas]);
+  const seriesGlucosa = useMemo(() => {
+    const conGlucosa = lecturas.filter((l) => l.glucosaEstimadaMgDl && l.glucosaEstimadaMgDl > 0);
+    return agruparPorHora(conGlucosa, (l) => l.glucosaEstimadaMgDl!);
+  }, [lecturas]);
   const seriesRiesgo = useMemo(() => agruparPorHora(lecturas, (l) => l.probabilidadPico * 100), [lecturas]);
 
   const metrics = [
@@ -259,7 +265,7 @@ export function Dashboard() {
           <div className="dashboard__card-header">
             <div>
               <h3 className="dashboard__card-title">Monitoreo 24 Horas</h3>
-              <p className="dashboard__card-subtitle">Pulso · Temperatura</p>
+              <p className="dashboard__card-subtitle">Pulso · Temperatura · Glucosa</p>
             </div>
             <span className="dashboard__legend">
               {ultimaActualizacion
@@ -285,6 +291,12 @@ export function Dashboard() {
                 <span className="dashboard__chart-label">Temperatura (°C)</span>
                 <LineChart points={seriesTemp} color="var(--cyan)" precision={2} />
               </div>
+              {seriesGlucosa.length > 0 && (
+                <div className="dashboard__chart-block">
+                  <span className="dashboard__chart-label">Glucosa estimada (mg/dL)</span>
+                  <LineChart points={seriesGlucosa} color="var(--warning)" precision={0} />
+                </div>
+              )}
             </div>
           )}
         </ContentCard>
