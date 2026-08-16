@@ -87,6 +87,8 @@ Directivas clave:
   real.
 - `img-src 'self' data: blob: https://*.basemaps.cartocdn.com`: avatares (data
   URIs) y mapas.
+- `font-src` y `style-src` cubren los orígenes de Google Fonts
+  (`fonts.googleapis.com` / `fonts.gstatic.com`) usados en `globals.css`.
 
 Definición centralizada en `src/lib/security.ts` (`CSP_POLICY`). En el build, el
 origen de `connect-src` se deriva de `VITE_API_URL` si está definida (función
@@ -152,11 +154,21 @@ evitando vectores de XSS vía la foto de perfil.
 
 ## Decisiones de arquitectura conocidas
 
-- **Tokens en `localStorage`**: el backend no soporta cookies `httpOnly`, por lo
-  que el SPA almacena access/refresh tokens en `localStorage` vía
-  `src/lib/auth.ts`. Este patrón es vulnerable a XSS, por lo que está mitigado
-  con CSP estricta y sanitización de entrada. Migración recomendada: cookies
-  `httpOnly` + `SameSite`, o almacenamiento en memoria + refresh rota.
+- **Sesión sin cookies `httpOnly`**: el backend no las soporta, por lo que el
+  SPA usa tokens *bearer*. El **access token vive solo en memoria**
+  (`src/lib/auth.ts`), nunca se persiste; al cargar la app se restaura con
+  `restaurarSesion()` (`src/lib/api.ts`), que renueva el access token vía
+  `/api/Auth/refresh` usando el refresh token guardado en `sessionStorage`
+  (alcance de la pestaña, sin persistencia en disco ni sync de cuentas). Este
+  es el patrón recomendado por OWASP para SPAs cuando no hay cookies `httpOnly`.
+  Migración final recomendada: cookies `httpOnly` + `SameSite` + refresh
+  rotativo.
+- **Pago simulado sin datos de tarjeta**: el modal de activación de plan
+  (`src/pages/Plans/SelectPlan.tsx`) no solicita número, expiración ni CVC; no
+  se recolectan datos de tarjeta en el cliente.
+- **Errores del backend**: las respuestas 5xx nunca se muestran tal cual al
+  usuario (mensaje genérico `Error del servidor`); el body solo se registra en
+  consola. Los 4xx conservan el mensaje de negocio del API.
 - **Reglas SAST propias**: las reglas de `.semgrep/rules` son un conjunto mínimo
   adaptado a React/TS; se pueden ampliar en cada revisión.
 - **`Math.random()`** se usa únicamente en el simulador biométrico (datos
@@ -187,6 +199,8 @@ mantenedores del repositorio describiendo el hallazgo de forma privada, con:
 | `scripts/pre-commit-secrets.mjs` | Gitleaks en el hook de pre-commit |
 | `scripts/license-check.mjs` | Política de licencias de dependencias |
 | `src/lib/security.ts` | CSP, cabeceras, `buildCsp` y utilidades de sanitización |
+| `src/lib/auth.ts` | Sesión en memoria + `sessionStorage` (access token no persistido) |
+| `src/lib/api.ts` | Cliente del API, renovación de tokens y `restaurarSesion()` |
 | `src/components/auth/ProtectedRoute.tsx` | Barrera de autenticación |
 | `src/pages/ForgotPassword/…` / `ResetPassword/…` | Token de reseteo por estado, no por URL |
 | `Dockerfile` + `nginx.conf` | Despliegue DO App Platform (no root, puerto 8080) |

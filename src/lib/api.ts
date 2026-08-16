@@ -1,14 +1,12 @@
 import { getAccessToken, getRefreshToken, getUser, saveSession, clearSession } from './auth.ts';
-import { fotoSrc } from './security.ts';
+import { API_ORIGIN, fotoSrc } from './security.ts';
 
 // `import.meta.env` es una extensión de Vite que no existe al ejecutar el módulo
 // bajo Node (pruebas). El acceso opcional evita lanzar en ese entorno y Vite
 // sigue sustituyendo `import.meta.env` en build/serve.
 const viteEnv = import.meta.env as { VITE_API_URL?: string; DEV?: boolean } | undefined;
 
-export const API_BASE_URL =
-  viteEnv?.VITE_API_URL ??
-  (viteEnv?.DEV ? '' : 'https://bioguard-api-lkvnq.ondigitalocean.app');
+export const API_BASE_URL = viteEnv?.VITE_API_URL ?? (viteEnv?.DEV ? '' : API_ORIGIN);
 
 export class ApiError extends Error {
   status: number;
@@ -38,6 +36,19 @@ const RUTAS_PUBLICAS = [
 ];
 
 let refreshEnCurso: Promise<string | null> | null = null;
+
+/**
+ * Restaura la sesión al cargar la app: si hay refresh token en sessionStorage
+ * pero no hay access token en memoria (p. ej. tras recargar la página), lo
+ * renueva silenciosamente. Devuelve true si queda una sesión activa.
+ * Se invoca desde main.tsx antes de renderizar el árbol de React.
+ */
+export async function restaurarSesion(): Promise<boolean> {
+  if (getAccessToken()) return true;
+  if (!getRefreshToken()) return false;
+  const nuevo = await renovarToken();
+  return Boolean(nuevo);
+}
 
 async function renovarToken(): Promise<string | null> {
   const refreshTokenValue = getRefreshToken();
@@ -121,7 +132,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (!res.ok) {
-    const message = body?.message ?? body?.title ?? `Error del servidor (${res.status})`;
+    // Errores 5xx: mensaje genérico al usuario. Nunca se muestra el body del
+    // backend en la UI para no filtrar detalles internos (stack traces,
+    // mensajes de DB, rutas internas, etc.); se registra solo en consola.
+    if (res.status >= 500) {
+      if (body) console.warn('[api] error de servidor', res.status, body);
+      throw new ApiError(`Error del servidor (${res.status})`, res.status);
+    }
+    const message = body?.message ?? body?.title ?? `Error de la solicitud (${res.status})`;
     throw new ApiError(message, res.status);
   }
 

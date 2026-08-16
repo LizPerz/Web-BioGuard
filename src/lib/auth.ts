@@ -1,6 +1,5 @@
 import { STORAGE_KEYS } from './security.ts';
 
-const ACCESS_TOKEN_KEY = STORAGE_KEYS.accessToken;
 const REFRESH_TOKEN_KEY = STORAGE_KEYS.refreshToken;
 const USER_KEY = STORAGE_KEYS.user;
 const ONBOARDING_KEY = STORAGE_KEYS.onboarding;
@@ -15,26 +14,36 @@ export interface SessionUser {
   fotoPerfil?: string | null;
 }
 
+/**
+ * Access token en memoria del módulo: nunca se persiste en el navegador (ni
+ * en disco, ni en el sync de cuentas, ni se comparte entre pestañas). Al
+ * cargar la app se restaura con `restaurarSesion()` (src/lib/api.ts), que
+ * renueva el access token vía /api/Auth/refresh si existe refresh token en
+ * sessionStorage. Es el patrón recomendado por OWASP para SPAs cuando el
+ * backend no soporta cookies httpOnly.
+ */
+let accessTokenMemoria: string | null = null;
+
 export function saveSession(
   token: string,
   refreshTokenValue: string | null | undefined,
   user: SessionUser,
 ): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
-  if (refreshTokenValue) localStorage.setItem(REFRESH_TOKEN_KEY, refreshTokenValue);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  accessTokenMemoria = token;
+  if (refreshTokenValue) sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshTokenValue);
+  sessionStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  return accessTokenMemoria;
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
+  return sessionStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function getUser(): SessionUser | null {
-  const raw = localStorage.getItem(USER_KEY);
+  const raw = sessionStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as SessionUser;
@@ -44,9 +53,9 @@ export function getUser(): SessionUser | null {
 }
 
 export function clearSession(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  accessTokenMemoria = null;
+  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+  sessionStorage.removeItem(USER_KEY);
 }
 
 export function setPendingOnboarding(value: boolean): void {
@@ -81,13 +90,13 @@ export function updateSessionPlan(plan: string): void {
   const user = getUser();
   if (!user) return;
   const updated: SessionUser = { ...user, plan };
-  localStorage.setItem(USER_KEY, JSON.stringify(updated));
+  sessionStorage.setItem(USER_KEY, JSON.stringify(updated));
 }
 
 export function updateSessionUser(patch: Partial<SessionUser>): SessionUser | null {
   const user = getUser();
   if (!user) return null;
   const updated: SessionUser = { ...user, ...patch };
-  localStorage.setItem(USER_KEY, JSON.stringify(updated));
+  sessionStorage.setItem(USER_KEY, JSON.stringify(updated));
   return updated;
 }

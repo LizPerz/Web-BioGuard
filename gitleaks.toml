@@ -10,10 +10,26 @@ useDefault = true
 [[rules]]
 id = "bioguard-refresh-token-literal"
 description = "RefreshToken hardcodeado como literal en el frontend"
-regex = '''(?i)refresh[_ -]?token\s*[:=]\s*["'][A-Za-z0-9_+\/.\-=]{16,}["']'''
-secret-group = 0
-entropy = 3.0
+# secret-group=1: la entropía se mide solo sobre el valor entre comillas
+# (evita falsos positivos con nombres de clave como 'bioguard_refresh_token').
+regex = '''(?i)refresh[_ -]?token\s*[:=]\s*["']([A-Za-z0-9_+\/.\-=]{16,})["']'''
+secret-group = 1
+entropy = 4.0
 keywords = ["refresh", "token"]
+
+[[rules]]
+id = "mongodb-connection-string"
+description = "MongoDB connection string con credenciales (mongodb(srv)://user:pass@host)"
+regex = '''mongodb(?:\+srv)?://[^\s:]+:[^\s@]+@[^\s/?#]+'''
+secret-group = 0
+keywords = ["mongodb"]
+
+[[rules]]
+id = "bioguard-jwt-secret"
+description = "JWT secret key hardcodeado (JWT_SECRET_KEY=valor)"
+regex = '''(?i)jwt[_-]?secret[_-]?key\s*[:=]\s*[A-Za-z0-9_+!@#$%^&*()=\-]{16,}'''
+secret-group = 0
+keywords = ["jwt", "secret"]
 
 [[rules]]
 id = "digitalocean-token"
@@ -38,21 +54,12 @@ paths = [
   '''SECURITY\.md''',
   '''README\.md''',
   '''package-lock\.json''',
-  '''^src/test/''',
 ]
 regexes = [
-  # Patrones de ejemplo usados en reglas SAST / documentación
-  '''[A-Za-z0-9_+\/.\-]{12,}''',
-  '''AKIA[0-9A-Z]{16}''',
-  '''ghp_[A-Za-z0-9]{20,}''',
-  '''AIza[0-9A-Za-z\-_]{30,}''',
-  '''eyJ[A-Za-z0-9_-]{10,}''',
-  '''PRIVATE KEY''',
-  '''sk_live_[0-9a-zA-Z]{24,}''',
-  '''xox[baprs]-[0-9A-Za-z-]{10,}''',
-  '''dop_v1_[a-f0-9]{64}''',
-  '''hooks\.slack\.com/services/T[A-Za-z0-9_]{8,}''',
-  # Valores de ejemplo/documentación
+  # Solo valores de ejemplo/documentación. NO incluir aquí prefijos de
+  # credenciales reales (sk_live_, dop_v1_, AKIA, ghp_, …): eso desactivaría
+  # la detección de fugas reales. Los ejemplos de .semgrep/, src/test/ y
+  # docs ya quedan cubiertos por la lista de `paths`.
   '''(PASSWORD|PASSWD|SECRET|TOKEN|KEY)\s*=\s*["']?(example|changeme|xxxxx|\*\*\*\*\*)["']?''',
   '''changeme''',
 ]

@@ -241,9 +241,10 @@ test('config: App Spec tiene health check HTTP', () => {
   assert.match(DO_SPEC, /http_path: \//);
 });
 
-test('config: App Spec restringe CORS al prefijo de BioGuard', () => {
+test('config: App Spec restringe CORS a orígenes exactos', () => {
   assert.match(DO_SPEC, /allow_origins:/);
-  assert.match(DO_SPEC, /prefix: https:\/\/bioguard-/);
+  assert.match(DO_SPEC, /- exact: https:\/\/bioguard-front\.ondigitalocean\.app/);
+  assert.doesNotMatch(DO_SPEC, /prefix: https:\/\/bioguard-/);
 });
 
 test('config: App Spec documenta VITE_API_URL como build arg', () => {

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   API_BASE_URL,
   ApiError,
+  restaurarSesion,
   registerWeb,
   loginWeb,
   enviar2FA,
@@ -49,7 +50,7 @@ import {
   marcarNotificacionLeida,
   eliminarNotificacion,
 } from '../lib/api.ts';
-import { saveSession, clearSession, type SessionUser } from '../lib/auth.ts';
+import { saveSession, clearSession, getAccessToken, getRefreshToken, type SessionUser } from '../lib/auth.ts';
 import { API_ORIGIN } from '../lib/security.ts';
 
 // ── Shims de entorno (Node sin jsdom) ──────────────────────
@@ -137,6 +138,47 @@ const USUARIO: SessionUser = {
 
 test('api: API_BASE_URL apunta al API de producción por defecto', () => {
   assert.equal(API_BASE_URL, API_ORIGIN);
+});
+
+// ── restaurarSesion ─────────────────────────────────────────
+
+test('api: restaurarSesion renueva la sesión tras recargar la página', async () => {
+  clearSession();
+  (globalThis as { sessionStorage: Storage }).sessionStorage.setItem('bioguard_refresh_token', 'refresh-valido');
+  (globalThis as { sessionStorage: Storage }).sessionStorage.setItem('bioguard_user', JSON.stringify(USUARIO));
+  responseQueue.push(makeResponse({ accessToken: 'tok-nuevo', refreshToken: 'rt-nuevo' }));
+
+  const ok = await restaurarSesion();
+
+  assert.equal(ok, true);
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(fetchCalls[0].url, API_BASE_URL + '/api/Auth/refresh');
+  assert.equal(getAccessToken(), 'tok-nuevo', 'el access token se restaura en memoria');
+  assert.equal(getRefreshToken(), 'rt-nuevo');
+});
+
+test('api: restaurarSesion con sesión activa no toca la red', async () => {
+  saveSession('tok-activo', 'rt', USUARIO);
+  const ok = await restaurarSesion();
+  assert.equal(ok, true);
+  assert.equal(fetchCalls.length, 0, 'no debe llamar al API si ya hay access token');
+});
+
+test('api: restaurarSesion sin refresh token no llama a la red', async () => {
+  clearSession();
+  const ok = await restaurarSesion();
+  assert.equal(ok, false);
+  assert.equal(fetchCalls.length, 0);
+});
+
+test('api: restaurarSesion con refresh inválido no deja sesión', async () => {
+  clearSession();
+  (globalThis as { sessionStorage: Storage }).sessionStorage.setItem('bioguard_refresh_token', 'refresh-malo');
+  responseQueue.push(makeResponse({ message: 'refresh inválido' }, 401));
+
+  const ok = await restaurarSesion();
+  assert.equal(ok, false);
+  assert.equal(getAccessToken(), null);
 });
 
 // ── ApiError ───────────────────────────────────────────────

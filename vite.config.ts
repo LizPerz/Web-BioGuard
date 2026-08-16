@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { SECURITY_HEADERS, buildCsp } from './src/lib/security.ts'
+import { API_ORIGIN, SECURITY_HEADERS, buildCsp } from './src/lib/security.ts'
 
 /**
  * Aplica las cabeceras HTTP de seguridad en el servidor de preview
@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: 'https://bioguard-api-lkvnq.ondigitalocean.app',
+          target: API_ORIGIN,
           changeOrigin: true,
         },
       },

@@ -66,9 +66,9 @@ test('clearSession: elimina todos los datos de sesión', () => {
 });
 
 test('getUser: devuelve null ante datos corruptos (anti-tamper)', () => {
-  (globalThis as { localStorage: Storage }).localStorage.setItem('bioguard_user', '{no-json');
+  (globalThis as { sessionStorage: Storage }).sessionStorage.setItem('bioguard_user', '{no-json');
   assert.equal(getUser(), null);
-  (globalThis as { localStorage: Storage }).localStorage.setItem('bioguard_user', 'not json at all');
+  (globalThis as { sessionStorage: Storage }).sessionStorage.setItem('bioguard_user', 'not json at all');
   assert.equal(getUser(), null);
 });
 
@@ -143,10 +143,11 @@ function getPendingPendingVerifyEmailSafe(): string {
   ) ?? '';
 }
 
-test('storage: onboarding vive en localStorage, verify-email en sessionStorage', () => {
+test('storage: onboarding vive en localStorage, sesión en sessionStorage/memoria', () => {
   clearPendingOnboarding();
   clearPendingVerifyEmail();
   setPendingOnboarding(true);
+  saveSession('tok-mem', 'refresh-xyz', USUARIO);
   setPendingVerifyEmail('ana@example.com');
   assert.equal(
     (globalThis as { localStorage: Storage }).localStorage.getItem('bioguard_pending_onboarding'),
@@ -163,6 +164,18 @@ test('storage: onboarding vive en localStorage, verify-email en sessionStorage',
   );
 });
 
+test('session: el access token vive solo en memoria (ni localStorage ni sessionStorage)', () => {
+  saveSession('tok-mem', 'refresh-xyz', USUARIO);
+  const ls = globalThis as { localStorage: Storage; sessionStorage: Storage };
+  assert.equal(ls.localStorage.getItem('bioguard_access_token'), null, 'access token NO en localStorage');
+  assert.equal(ls.sessionStorage.getItem('bioguard_access_token'), null, 'access token NO en sessionStorage');
+  assert.equal(ls.localStorage.getItem('bioguard_refresh_token'), null, 'refresh token NO en localStorage');
+  assert.equal(ls.localStorage.getItem('bioguard_user'), null, 'usuario NO en localStorage');
+  assert.equal(ls.sessionStorage.getItem('bioguard_refresh_token'), 'refresh-xyz');
+  assert.equal(ls.sessionStorage.getItem('bioguard_user'), JSON.stringify(USUARIO));
+  assert.equal(getAccessToken(), 'tok-mem');
+});
+
 test('onboarding: tolera valores no-verdadestring como pendiente', () => {
   (globalThis as { localStorage: Storage }).localStorage.setItem('bioguard_pending_onboarding', '1');
   assert.equal(getPendingOnboarding(), false);
@@ -172,7 +185,7 @@ test('onboarding: tolera valores no-verdadestring como pendiente', () => {
 
 test('getUser: devuelve el JSON almacenado tal cual (contrato del cast)', () => {
   const conExtra = JSON.stringify({ ...USUARIO, hack: true });
-  (globalThis as { localStorage: Storage }).localStorage.setItem('bioguard_user', conExtra);
+  (globalThis as { sessionStorage: Storage }).sessionStorage.setItem('bioguard_user', conExtra);
   const parsed = getUser();
   assert.equal(parsed?.id, USUARIO.id);
   assert.equal((parsed as { hack?: boolean } | null)?.hack, true);
@@ -189,7 +202,7 @@ test('updateSessionPlan: no op sin sesión activa', () => {
 test('updateSessionUser: persiste el parche con fotoPerfil null', () => {
   saveSession('tok', 'refresh', USUARIO);
   updateSessionUser({ fotoPerfil: null });
-  const raw = (globalThis as { localStorage: Storage }).localStorage.getItem('bioguard_user');
+  const raw = (globalThis as { sessionStorage: Storage }).sessionStorage.getItem('bioguard_user');
   assert.ok(raw, 'el usuario debe persistir actualizado');
   assert.match(raw as string, /"fotoPerfil":null/);
   assert.ok((raw as string).includes(USUARIO.id));

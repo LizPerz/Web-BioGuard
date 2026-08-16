@@ -12,12 +12,18 @@ export const API_ORIGIN = 'https://bioguard-api-lkvnq.ondigitalocean.app';
 /** Orígenes de mapas (Leaflet) permitidos por la CSP. */
 export const MAP_ORIGIN = 'https://*.basemaps.cartocdn.com';
 
+/** Google Fonts: CSS (style-src) y archivos de fuente (font-src). */
+const FONTS_CSS_ORIGIN = 'https://fonts.googleapis.com';
+const FONTS_FILES_ORIGIN = 'https://fonts.gstatic.com';
+
 /**
  * Content Security Policy del SPA.
  * - default-src 'self': solo contenido del mismo origen por defecto.
  * - script-src 'self': sin scripts inline ni remote (bloquea XSS).
- * - style-src 'self' 'unsafe-inline': React necesita atributos style inline.
+ * - style-src: React necesita atributos style inline; se permite el CSS de
+ *   Google Fonts (la hoja importada en globals.css).
  * - img-src: permite data:/blob: (avatares) y los tiles de CARTO.
+ * - font-src: fuentes locales (data:) y los archivos de Google Fonts.
  * - connect-src: solo el propio origen (proxy dev) y el API de producción.
  * - object-src 'none', frame-ancestors 'none': no se incrustan ni se deja
  *   incrustar el SPA.
@@ -25,10 +31,10 @@ export const MAP_ORIGIN = 'https://*.basemaps.cartocdn.com';
 export const CSP_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
+  `style-src 'self' 'unsafe-inline' ${FONTS_CSS_ORIGIN}`,
   `img-src 'self' data: blob: ${MAP_ORIGIN}`,
   `connect-src 'self' ${API_ORIGIN}`,
-  "font-src 'self' data:",
+  `font-src 'self' data: ${FONTS_FILES_ORIGIN}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
