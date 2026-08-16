@@ -65,41 +65,49 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # Semgrep se instala con pip para evitar los fallos de `docker pull
+      # semgrep/semgrep` (rate-limit de Docker Hub en runners de GitHub).
+      - name: Instalar Semgrep
+        run: pip3 install --quiet 'semgrep==1.130.0'
+
       - name: Semgrep (reglas .semgrep/rules) — bloqueante
-        uses: docker://semgrep/semgrep:1
-        with:
-          args: >-
-            scan
-            --config .semgrep/rules
-            --metrics=off
-            --error
-            --sarif-output semgrep.sarif
-            .
+        run: semgrep scan --config .semgrep/rules --metrics=off --error --sarif-output semgrep.sarif .
+
+      - name: Comprobar si semgrep.sarif tiene resultados
+        id: check-semgrep
+        if: always()
+        run: |
+          if [ -f semgrep.sarif ] && jq -e '[.runs[].results[]] | length > 0' semgrep.sarif >/dev/null 2>&1; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Subir resultados (reglas propias)
-        if: always()
+        if: steps.check-semgrep.outputs.has_results == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
           category: semgrep
 
       - name: Semgrep (registros oficiales p/javascript · p/react · p/owasp-top-ten)
-        uses: docker://semgrep/semgrep:1
-        with:
-          args: >-
-            scan
-            --config p/javascript
-            --config p/react
-            --config p/owasp-top-ten
-            --metrics=off
-            --sarif-output semgrep-owasp.sarif
-            .
+        run: semgrep scan --config p/javascript --config p/react --config p/owasp-top-ten --metrics=off --sarif-output semgrep-owasp.sarif .
         # No bloquea el pipeline: los hallazgos se publican en Code Scanning
         # y se revisan/triajean. Activa --error cuando la base esté limpia.
         continue-on-error: true
 
-      - name: Subir resultados (registros oficiales)
+      - name: Comprobar si semgrep-owasp.sarif tiene resultados
+        id: check-semgrep-owasp
         if: always()
+        run: |
+          if [ -f semgrep-owasp.sarif ] && jq -e '[.runs[].results[]] | length > 0' semgrep-owasp.sarif >/dev/null 2>&1; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Subir resultados (registros oficiales)
+        if: steps.check-semgrep-owasp.outputs.has_results == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep-owasp.sarif
@@ -183,15 +191,18 @@ jobs:
         # `exit-code: '1'` cuando la imagen esté limpia de HIGH/CRITICAL.
         continue-on-error: true
 
-      - name: SARIF vacío si Trivy no generó resultados
+      - name: Comprobar si trivy.sarif tiene resultados
+        id: check-trivy
         if: always()
         run: |
-          if [ ! -f trivy.sarif ]; then
-            echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > trivy.sarif
+          if [ -f trivy.sarif ] && jq -e '[.runs[].results[]] | length > 0' trivy.sarif >/dev/null 2>&1; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Subir resultados
-        if: always()
+        if: steps.check-trivy.outputs.has_results == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy.sarif
