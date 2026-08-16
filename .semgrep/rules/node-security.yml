@@ -12,7 +12,7 @@ rules:
           - pattern: $MODULE.execSync($CMD)
           - pattern: $MODULE.exec($CMD, $OPTS)
           - pattern: $MODULE.execSync($CMD, $OPTS)
-          - pattern: $MODULE.spawn($CMD, ..., { shell: true })
+          - pattern: "$MODULE.spawn($CMD, ..., { shell: true })"
       - pattern-not: $MODULE.exec("$CONST")
       - pattern-not: $MODULE.execSync("$CONST")
 
@@ -28,19 +28,19 @@ rules:
     message: >-
       Uso de Math.random() para propósitos de seguridad (tokens, contraseñas,
       códigos). Usa crypto.getRandomValues o el módulo crypto de Node.
-    languages: [javascript, typescript, jsx, tsx]
+    languages: [javascript, typescript]
     severity: WARNING
     pattern: Math.random()
     paths:
       exclude:
-        - src/simulation/
-        - src/test/
+        - '**/src/simulation/'
+        - '**/src/test/'
 
   - id: no-base64-for-passwords
     message: >-
       Codificar contraseñas o secretos con base64 no es cifrado y es trivial de
       decodificar. Usa bcrypt/argon2 en el servidor.
-    languages: [javascript, typescript, jsx, tsx]
+    languages: [javascript, typescript]
     severity: WARNING
     pattern-either:
       - pattern: btoa($PASSWORD)

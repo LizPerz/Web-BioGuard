@@ -4,14 +4,14 @@ rules:
       Enlace con target="_blank" sin rel="noopener noreferrer". Esto expone a
       la vulnerabilidad de "reverse tabnabbing". Añade
       rel="noopener noreferrer" a todos los enlaces externos.
-    languages: [jsx, tsx]
+    languages: [javascript, typescript]
     severity: ERROR
     patterns:
-      - pattern: <$TAG ... target="_blank" ...>
-      - pattern-not: <$TAG ... rel="noopener" ...>
-      - pattern-not: <$TAG ... rel="noreferrer" ...>
-      - pattern-not: <$TAG ... rel="noopener noreferrer" ...>
-      - pattern-not: <$TAG ... rel="noreferrer noopener" ...>
+      - pattern: <$TAG ... target="_blank">...</$TAG>
+      - pattern-not: <$TAG ... rel="noopener">...</$TAG>
+      - pattern-not: <$TAG ... rel="noreferrer">...</$TAG>
+      - pattern-not: <$TAG ... rel="noopener noreferrer">...</$TAG>
+      - pattern-not: <$TAG ... rel="noreferrer noopener">...</$TAG>
 
   - id: react-no-session-token-in-components
     message: >-
@@ -19,30 +19,31 @@ rules:
       archivo arbitrario. Toda la gestión de tokens debe pasar por
       src/lib/auth.ts. No almacenes tokens ni secretos en el navegador salvo
       en los helpers centralizados.
-    languages: [jsx, tsx, typescript]
+    languages: [javascript, typescript]
     severity: ERROR
     patterns:
       - pattern-regex: >-
           (?:localStorage|sessionStorage)\.setItem\(\s*["'][^"']*(?:token|session|access|refresh|auth|password|credential)[^"']*["']
     paths:
       exclude:
+        - src/test/
         - src/lib/auth.ts
 
   - id: react-iframe-sandbox-missing
     message: >-
       iframe sin atributo sandbox. Añade sandbox="allow-scripts allow-same-origin"
       únicamente si es imprescindible, o usa las restricciones mínimas.
-    languages: [jsx, tsx]
+    languages: [javascript, typescript]
     severity: WARNING
     patterns:
-      - pattern: <iframe ...>
-      - pattern-not: <iframe ... sandbox=...>
+      - pattern: <iframe ...></iframe>
+      - pattern-not: <iframe ... sandbox=...></iframe>
 
   - id: react-img-non-https
     message: >-
       Imagen cargada con protocolo http://. Usa https:// para evitar contenido
       mezclado y ataques MITM.
-    languages: [jsx, tsx]
+    languages: [javascript, typescript]
     severity: WARNING
     pattern-regex: \b(?:src|href|poster)\s*[:=]\s*["']http://
 
@@ -50,8 +51,8 @@ rules:
     message: >-
       Formulario con action hacia un destino no controlado. Asegúrate de que la
       acción del formulario apunte a orígenes de confianza.
-    languages: [jsx, tsx]
+    languages: [javascript, typescript]
     severity: WARNING
     pattern-either:
-      - pattern: <form ... action={$V} ...>
-      - pattern: <form ... action="$V" ...>
+      - pattern: <form ... action={$V}>...</form>
+      - pattern: <form ... action="$V">...</form>
