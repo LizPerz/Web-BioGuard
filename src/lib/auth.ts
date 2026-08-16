@@ -1,8 +1,10 @@
-const ACCESS_TOKEN_KEY = 'bioguard_access_token';
-const REFRESH_TOKEN_KEY = 'bioguard_refresh_token';
-const USER_KEY = 'bioguard_user';
-const ONBOARDING_KEY = 'bioguard_pending_onboarding';
-const PENDING_VERIFY_EMAIL_KEY = 'bioguard_pending_verify_email';
+import { STORAGE_KEYS } from './security.ts';
+
+const ACCESS_TOKEN_KEY = STORAGE_KEYS.accessToken;
+const REFRESH_TOKEN_KEY = STORAGE_KEYS.refreshToken;
+const USER_KEY = STORAGE_KEYS.user;
+const ONBOARDING_KEY = STORAGE_KEYS.onboarding;
+const PENDING_VERIFY_EMAIL_KEY = STORAGE_KEYS.pendingVerifyEmail;
 
 export interface SessionUser {
   id: string;

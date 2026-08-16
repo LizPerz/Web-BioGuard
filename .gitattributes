@@ -1,0 +1,24 @@
+# BioGuard · Normalización de finales de línea y tipos binarios.
+# Obliga a usar LF en todos los archivos de texto (evita el churn CRLF/LF en
+# Windows) y marca los binarios para que git nunca los normalice.
+
+# Texto: siempre LF, tanto en checkout como en index.
+* text=auto eol=lf
+
+# Scripts shell: LF siempre (el contenedor Linux los requiere).
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Binarios (no tocar).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.ttf binary
+*.otf binary

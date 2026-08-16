@@ -1,0 +1,58 @@
+# BioGuard - Gitleaks configuration
+# Extiende las reglas por defecto de gitleaks y añade reglas propias.
+
+title = "BioGuard gitleaks config"
+
+[extend]
+useDefault = true
+
+# Reglas personalizadas del proyecto -----------------------------------------
+[[rules]]
+id = "bioguard-refresh-token-literal"
+description = "RefreshToken hardcodeado como literal en el frontend"
+regex = '''(?i)refresh[_ -]?token\s*[:=]\s*["'][A-Za-z0-9_+\/.\-=]{16,}["']'''
+secret-group = 0
+entropy = 3.0
+keywords = ["refresh", "token"]
+
+[[rules]]
+id = "digitalocean-token"
+description = "Token de DigitalOcean (usado por el backend) expuesto"
+regex = '''dop_v1_[a-f0-9]{64}'''
+secret-group = 0
+
+[[rules]]
+id = "stripe-live-key"
+description = "Llave secreta de Stripe (live)"
+regex = '''sk_live_[0-9a-zA-Z]{24,}'''
+secret-group = 0
+keywords = ["sk_live_"]
+
+# Allowlist global ------------------------------------------------------------
+[allowlist]
+description = "Rutas y patrones que no deben considerarse secretos"
+paths = [
+  '''gitleaks\.toml''',
+  '''\.semgrep/''',
+  '''\.github/workflows/''',
+  '''SECURITY\.md''',
+  '''README\.md''',
+  '''package-lock\.json''',
+  '''^src/test/''',
+]
+regexes = [
+  # Patrones de ejemplo usados en reglas SAST / documentación
+  '''[A-Za-z0-9_+\/.\-]{12,}''',
+  '''AKIA[0-9A-Z]{16}''',
+  '''ghp_[A-Za-z0-9]{20,}''',
+  '''AIza[0-9A-Za-z\-_]{30,}''',
+  '''eyJ[A-Za-z0-9_-]{10,}''',
+  '''PRIVATE KEY''',
+  '''sk_live_[0-9a-zA-Z]{24,}''',
+  '''xox[baprs]-[0-9A-Za-z-]{10,}''',
+  '''dop_v1_[a-f0-9]{64}''',
+  '''hooks\.slack\.com/services/T[A-Za-z0-9_]{8,}''',
+  # Valores de ejemplo/documentación
+  '''(PASSWORD|PASSWD|SECRET|TOKEN|KEY)\s*=\s*["']?(example|changeme|xxxxx|\*\*\*\*\*)["']?''',
+  '''changeme''',
+]

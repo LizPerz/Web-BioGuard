@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { AuthCard } from '../../components/auth/AuthCard';
 import { PrimaryButton } from '../../components/ui/buttons';
@@ -28,9 +28,25 @@ interface PasswordChecks {
 
 export function ResetPassword() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') ?? '';
-  const requestId = searchParams.get('requestId') ?? '';
+  // El token se prefiere del estado del router (flujo de la pestaña de
+  // escritorio); si la página se abrió directo desde el enlace del correo,
+  // se lee de la URL. En ese caso se elimina de la URL al instante para no
+  // dejarlo en historial, logs o sync del navegador.
+  const navState = location.state as { token?: string; requestId?: string } | null;
+  const token = navState?.token ?? searchParams.get('token') ?? '';
+  const requestId = navState?.requestId ?? searchParams.get('requestId') ?? '';
+
+  useEffect(() => {
+    if (searchParams.has('token') || searchParams.has('requestId')) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('token');
+      url.searchParams.delete('requestId');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
+
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState('');

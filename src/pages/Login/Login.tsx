@@ -12,6 +12,7 @@ export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const [resetSuccess] = useState<boolean>((location.state as { resetSuccess?: boolean } | null)?.resetSuccess ?? false);
+  const sessionExpirada = new URLSearchParams(location.search).get('expirada') === '1';
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -94,6 +95,11 @@ export function Login() {
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
+          {sessionExpirada && (
+            <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(45, 134, 255, 0.12)', border: '1px solid rgba(45, 134, 255, 0.35)', color: 'var(--blue, #2d86ff)', fontSize: 13 }}>
+              Tu sesión expiró por seguridad. Inicia sesión de nuevo.
+            </div>
+          )}
           {formError && (
             <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(220, 38, 38, 0.12)', border: '1px solid rgba(220, 38, 38, 0.35)', color: 'var(--danger, #dc2626)', fontSize: 13 }}>
               {formError}

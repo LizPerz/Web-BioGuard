@@ -1,0 +1,56 @@
+# DigitalOcean App Platform · BioGuard Frontend
+#
+# El frontend se despliega como un "web service" que sirve el build con nginx
+# (Dockerfile + nginx.conf). App Platform NO permite cabeceras personalizadas
+# en sitios estáticos; nginx las aplica en producción.
+#
+# Uso:
+#   1. Sube este repositorio a GitHub.
+#   2. En DigitalOcean: Create App > escoge el repositorio > selecciona el
+#      "Dockerfile" como método de despliegue (App Spec o el panel).
+#   3. Sustituye `your-org` y ajusta la rama en el bloque `github`.
+#   4. Si el API desplegado difiere del por defecto, define VITE_API_URL en la
+#      app (se lee en el build del Dockerfile como build arg) y actualiza
+#      también src/lib/security.ts (API_ORIGIN).
+#
+# Referencia: https://docs.digitalocean.com/products/app-platform/references/app-spec/
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+
+name: bioguard-front
+
+services:
+  - name: web
+    dockerfile_path: Dockerfile
+    github:
+      repo: your-org/Web-BioGuard
+      branch: main
+      deploy_on_push: true
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /
+      initial_delay_seconds: 10
+      period_seconds: 30
+      timeout_seconds: 5
+      failure_threshold: 3
+    # Si el API está en otro origen y no es el por defecto:
+    # envs:
+    #   - key: VITE_API_URL
+    #     scope: BUILD_TIME
+    #     value: https://bioguard-api-lkvnq.ondigitalocean.app
+    routes:
+      - path: /
+        # Sin CORS abierto: el API no expone credenciales a cualquier origen.
+        cors:
+          allow_origins:
+            - prefix: https://bioguard-
+          allow_headers:
+            - Authorization
+            - Content-Type
+          allow_methods:
+            - GET
+            - HEAD

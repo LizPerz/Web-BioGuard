@@ -1,0 +1,18 @@
+# BioGuard · Lefthook: ganchos locales de pre-commit
+#
+# Instalación (se ejecuta automáticamente vía `npm run prepare`):
+#   npx lefthook install
+#
+# Referencia: https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    secrets:
+      # Escaneo rápido de secretos sobre los archivos staged (gitleaks).
+      # Si gitleaks no está instalado localmente, el script avisa y continúa;
+      # CI ejecuta el escaneo completo del historial.
+      run: node scripts/pre-commit-secrets.mjs
+    lint:
+      glob: '*.{ts,tsx,js,jsx,mjs}'
+      run: npx oxlint {staged_files}

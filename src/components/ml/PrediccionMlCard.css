@@ -258,3 +258,48 @@
     font-size: 16px;
   }
 }
+
+@media print {
+  .prediccion-ml-card {
+    background: #fff;
+    border: 1px solid #d7e0ec;
+    border-radius: 8px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .prediccion-ml-card__title,
+  .prediccion-ml-card__timestamp,
+  .prediccion-ml-card__caso-text,
+  .prediccion-ml-card__subtitled,
+  .prediccion-ml-card__metric-label,
+  .prediccion-ml-card__progress-label,
+  .prediccion-ml-card__action-text,
+  .prediccion-ml-card__model-version {
+    color: #111 !important;
+  }
+
+  .prediccion-ml-card__metric-value,
+  .prediccion-ml-card__progress-value {
+    color: #2d86ff !important;
+  }
+
+  .prediccion-ml-card__metric {
+    background: #f7f8fa;
+    border-color: #e5e7eb;
+  }
+
+  .prediccion-ml-card__caso-clinico,
+  .prediccion-ml-card__probability,
+  .prediccion-ml-card__action {
+    background: #f4f6fa;
+  }
+
+  .prediccion-ml-card__progress-bar {
+    background: #e5e7eb;
+  }
+
+  .prediccion-ml-card__risk-badge {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}

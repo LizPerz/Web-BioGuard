@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/Login/Login';
 import { Register } from './pages/Register/Register';
@@ -12,6 +13,11 @@ import { Billing } from './pages/Billing/Billing';
 import { SelectPlan } from './pages/Plans/SelectPlan';
 import { Settings } from './pages/Settings/Settings';
 import { BiometricProvider, SimDashboard, SimHealth } from './simulation';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+
+const Ubicacion = lazy(() =>
+  import('./pages/Ubicacion/Ubicacion').then((m) => ({ default: m.Ubicacion })),
+);
 
 function App() {
   return (
@@ -24,12 +30,28 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify-2fa" element={<Verify2FA />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/health" element={<Health />} />
-        <Route path="/pacientes" element={<Pacientes />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/planes" element={<SelectPlan />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/health" element={<ProtectedRoute><Health /></ProtectedRoute>} />
+        <Route path="/pacientes" element={<ProtectedRoute><Pacientes /></ProtectedRoute>} />
+        <Route
+          path="/ubicacion"
+          element={
+            <ProtectedRoute>
+              <Suspense
+                fallback={
+                  <div style={{ padding: 40, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+                    Cargando mapa…
+                  </div>
+                }
+              >
+                <Ubicacion />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+        <Route path="/planes" element={<ProtectedRoute><SelectPlan /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route
           path="/sim/dashboard"
           element={<BiometricProvider><SimDashboard /></BiometricProvider>}

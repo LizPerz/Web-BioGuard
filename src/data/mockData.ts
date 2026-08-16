@@ -7,10 +7,10 @@ export interface UserData {
 }
 
 export const mockUser: UserData = {
-  firstName: 'Lizeth',
-  lastName: 'Atanacacio',
+  firstName: 'Usuario',
+  lastName: 'de demostración',
   maternalLastName: '',
-  email: 'lizeth@bioguard.com',
+  email: 'demo@bioguard.app',
   plan: 'Gratis',
 };
 
@@ -102,12 +102,14 @@ export const navItems = [
   { path: '/dashboard', label: 'Panel', icon: 'LayoutGrid' },
   { path: '/health', label: 'Salud', icon: 'Heart' },
   { path: '/pacientes', label: 'Pacientes y Cuidadores', icon: 'Users' },
+  { path: '/ubicacion', label: 'Ubicación', icon: 'MapPin' },
 ] as const;
 
 export const pageTitles: Record<string, string> = {
   '/dashboard': 'Panel Principal',
   '/health': 'Reportes',
   '/pacientes': 'Pacientes y Cuidadores',
+  '/ubicacion': 'Ubicación',
   '/billing': 'Centro de Facturación',
   '/settings': 'Ajustes',
 };
