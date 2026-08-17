@@ -11,10 +11,13 @@ import {
 } from 'lucide-react';
 import {
   getNotificaciones,
+  getMiPaciente,
+  getHistorialAlertas,
   marcarNotificacionLeida,
   eliminarNotificacion,
   ApiError,
   type NotificacionResponse,
+  type AlertaResponse,
 } from '../../lib/api';
 import './notifications-dropdown.css';
 
@@ -59,6 +62,18 @@ function normalizarNotificacion(raw: unknown): NotificacionResponse | null {
     ...(pick('pacienteId', 'PacienteId') != null ? { pacienteId: String(pick('pacienteId', 'PacienteId')) } : {}),
     leida,
     fechaCreacion: ts,
+  };
+}
+
+function alertaANotificacion(a: AlertaResponse): NotificacionResponse {
+  return {
+    id: `alerta-${a.id}`,
+    titulo: a.titulo || 'Alerta del paciente',
+    mensaje: a.mensaje || '',
+    tipo: a.tipo,
+    nivel: a.nivel,
+    leida: a.atendida,
+    fechaCreacion: a.fechaCreacion,
   };
 }
 
@@ -109,8 +124,26 @@ export function NotificationsDropdown() {
     setCargando(true);
     setError('');
     try {
-      const res = await getNotificaciones();
-      setNotificaciones((res ?? []).map(normalizarNotificacion).filter((n): n is NotificacionResponse => n != null));
+      const [notifsRaw, paciente] = await Promise.all([
+        getNotificaciones().catch(() => [] as NotificacionResponse[]),
+        getMiPaciente().catch(() => null),
+      ]);
+
+      const notifs = (notifsRaw ?? [])
+        .map(normalizarNotificacion)
+        .filter((n): n is NotificacionResponse => n != null);
+
+      let alertas: NotificacionResponse[] = [];
+      if (paciente?.id) {
+        const alertasRaw = await getHistorialAlertas(paciente.id, 50).catch(() => [] as AlertaResponse[]);
+        alertas = (alertasRaw ?? []).map(alertaANotificacion);
+      }
+
+      const merged = [...notifs, ...alertas].sort(
+        (a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime(),
+      );
+
+      setNotificaciones(merged);
     } catch (err) {
       setError(errMsg(err));
     } finally {
@@ -145,20 +178,24 @@ export function NotificationsDropdown() {
   const marcarLeida = async (id: string) => {
     const prev = notificaciones;
     setNotificaciones((lista) => lista.map((n) => (n.id === id ? { ...n, leida: true } : n)));
-    try {
-      await marcarNotificacionLeida(id);
-    } catch {
-      setNotificaciones(prev);
+    if (!id.startsWith('alerta-')) {
+      try {
+        await marcarNotificacionLeida(id);
+      } catch {
+        setNotificaciones(prev);
+      }
     }
   };
 
   const eliminar = async (id: string) => {
     const prev = notificaciones;
     setNotificaciones((lista) => lista.filter((n) => n.id !== id));
-    try {
-      await eliminarNotificacion(id);
-    } catch {
-      setNotificaciones(prev);
+    if (!id.startsWith('alerta-')) {
+      try {
+        await eliminarNotificacion(id);
+      } catch {
+        setNotificaciones(prev);
+      }
     }
   };
 
@@ -167,7 +204,8 @@ export function NotificationsDropdown() {
     if (pendientes.length === 0) return;
     setMarcandoTodas(true);
     try {
-      await Promise.allSettled(pendientes.map((n) => marcarNotificacionLeida(n.id)));
+      const apiPendientes = pendientes.filter((n) => !n.id.startsWith('alerta-'));
+      await Promise.allSettled(apiPendientes.map((n) => marcarNotificacionLeida(n.id)));
       setNotificaciones((lista) => lista.map((n) => ({ ...n, leida: true })));
     } finally {
       setMarcandoTodas(false);
