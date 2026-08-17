@@ -13,26 +13,80 @@ export interface SessionUser {
   fotoPerfil?: string | null;
 }
 
+// ── Multi-tab sync ─────────────────────────────────────────
+const logoutChannel = typeof BroadcastChannel !== 'undefined'
+  ? new BroadcastChannel('bioguard_auth')
+  : null;
+
+export function broadcastLogout(): void {
+  logoutChannel?.postMessage({ type: 'logout' });
+}
+
+let _onLogoutFromOtherTab: (() => void) | null = null;
+
+export function onLogoutFromOtherTab(callback: () => void): () => void {
+  _onLogoutFromOtherTab = callback;
+  return () => { _onLogoutFromOtherTab = null; };
+}
+
+if (logoutChannel) {
+  logoutChannel.onmessage = (ev) => {
+    if (ev.data?.type === 'logout') {
+      _onLogoutFromOtherTab?.();
+    }
+  };
+}
+
+// ── Storage helpers (sessionStorage for tokens, backward-compatible migration) ──
+
+function readFromboth(key: string): string | null {
+  return sessionStorage.getItem(key) ?? localStorage.getItem(key);
+}
+
+function migrateFromLocalStorage(): void {
+  const oldToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+  const oldRefresh = localStorage.getItem(REFRESH_TOKEN_KEY);
+  const oldUser = localStorage.getItem(USER_KEY);
+
+  if (oldToken) {
+    sessionStorage.setItem(ACCESS_TOKEN_KEY, oldToken);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
+  if (oldRefresh) {
+    sessionStorage.setItem(REFRESH_TOKEN_KEY, oldRefresh);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+  if (oldUser) {
+    sessionStorage.setItem(USER_KEY, oldUser);
+    localStorage.removeItem(USER_KEY);
+  }
+}
+
+// Run migration once on module load (survives SPA navigations, clears on tab close)
+migrateFromLocalStorage();
+
+// ── Session API ─────────────────────────────────────────────
+
 export function saveSession(
   token: string,
   refreshTokenValue: string | null | undefined,
   user: SessionUser,
 ): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
-  if (refreshTokenValue) localStorage.setItem(REFRESH_TOKEN_KEY, refreshTokenValue);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+  if (refreshTokenValue) sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshTokenValue);
+  sessionStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  return sessionStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
+  return sessionStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function getUser(): SessionUser | null {
-  const raw = localStorage.getItem(USER_KEY);
+  const raw = sessionStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as SessionUser;
@@ -42,9 +96,9 @@ export function getUser(): SessionUser | null {
 }
 
 export function clearSession(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+  sessionStorage.removeItem(USER_KEY);
 }
 
 export function setPendingOnboarding(value: boolean): void {
@@ -79,13 +133,26 @@ export function updateSessionPlan(plan: string): void {
   const user = getUser();
   if (!user) return;
   const updated: SessionUser = { ...user, plan };
-  localStorage.setItem(USER_KEY, JSON.stringify(updated));
+  sessionStorage.setItem(USER_KEY, JSON.stringify(updated));
 }
 
 export function updateSessionUser(patch: Partial<SessionUser>): SessionUser | null {
   const user = getUser();
   if (!user) return null;
   const updated: SessionUser = { ...user, ...patch };
-  localStorage.setItem(USER_KEY, JSON.stringify(updated));
+  sessionStorage.setItem(USER_KEY, JSON.stringify(updated));
   return updated;
+}
+
+// ── Centralized logout ─────────────────────────────────────
+
+export async function performLogout(navigate: (to: string) => void): Promise<void> {
+  const { logout } = await import('./api');
+  const token = getAccessToken();
+  if (token) {
+    try { await logout(token); } catch { /* remote logout failed; local session still cleaned */ }
+  }
+  clearSession();
+  broadcastLogout();
+  navigate('/login');
 }

@@ -2,9 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutGrid, FileBarChart2, Users, Settings, LogOut, Crown, X
 } from 'lucide-react';
-import { mockUser } from '../../data/mockData';
-import { getUser, getAccessToken, clearSession } from '../../lib/auth';
-import { logout } from '../../lib/api';
+import { getUser, performLogout } from '../../lib/auth';
 import './sidebar.css';
 
 interface SidebarProps {
@@ -15,7 +13,7 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = getUser() ?? mockUser;
+  const user = getUser();
 
   const navItems = [
     { path: '/dashboard', label: 'Panel', icon: LayoutGrid },
@@ -27,19 +25,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   const handleNav = () => {
     if (window.innerWidth < 1024) onClose();
-  };
-
-  const handleLogout = async () => {
-    const token = getAccessToken();
-    if (token) {
-      try {
-        await logout(token);
-      } catch {
-        // el logout remoto falló; la sesión local se limpia igual
-      }
-    }
-    clearSession();
-    navigate('/login');
   };
 
   return (
@@ -83,10 +68,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <div className="sidebar__spacer" />
 
           <div className="sidebar__bottom">
-            <div className="sidebar__plan-badge">
-              <Crown size={14} strokeWidth={1.8} />
-              <span>Plan {user.plan}</span>
-            </div>
+            {user && (
+              <div className="sidebar__plan-badge">
+                <Crown size={14} strokeWidth={1.8} />
+                <span>Plan {user.plan}</span>
+              </div>
+            )}
 
             <Link
               to="/settings"
@@ -99,7 +86,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
             <button
               className="sidebar__item sidebar__logout"
-              onClick={handleLogout}
+              onClick={() => performLogout(navigate)}
             >
               <LogOut size={19} strokeWidth={1.8} />
               <span>Cerrar sesión</span>

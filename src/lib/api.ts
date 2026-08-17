@@ -1,4 +1,4 @@
-import { getAccessToken } from './auth';
+import { getAccessToken, clearSession, broadcastLogout } from './auth';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://bioguard-api-lkvnq.ondigitalocean.app';
 
@@ -17,6 +17,14 @@ interface ApiErrorBody {
   title?: string;
 }
 
+// ── 401 auto-logout callback ──────────────────────────────
+let _onUnauthorized: (() => void) | null = null;
+let _handling401 = false;
+
+export function setOnUnauthorizedHandler(handler: () => void): void {
+  _onUnauthorized = handler;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getAccessToken();
   let res: Response;
@@ -31,6 +39,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     });
   } catch {
     throw new ApiError('No se pudo conectar con el servidor. Intenta de nuevo.', 0);
+  }
+
+  // Auto-logout on 401: clear session, broadcast to other tabs, redirect
+  if (res.status === 401 && !_handling401) {
+    _handling401 = true;
+    clearSession();
+    broadcastLogout();
+    _onUnauthorized?.();
+    setTimeout(() => { _handling401 = false; }, 500);
+    throw new ApiError('Sesión expirada. Inicia sesión de nuevo.', 401);
   }
 
   const body: ApiErrorBody | null = await res.json().catch(() => null);

@@ -5,7 +5,7 @@ import { ContentCard } from '../../components/ui/ContentCard';
 import { Modal } from '../../components/ui/Modal';
 import { PrimaryButton, DangerButton, SecondaryButton } from '../../components/ui/buttons';
 import { TextInput, PasswordInput } from '../../components/ui/inputs';
-import { getUser, updateSessionUser, clearSession } from '../../lib/auth';
+import { getUser, updateSessionUser, performLogout } from '../../lib/auth';
 import { useTheme } from '../../lib/use-theme';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -314,8 +314,7 @@ export function Settings() {
     setSavingDelete(true);
     try {
       await eliminarMiCuenta();
-      clearSession();
-      navigate('/login');
+      performLogout(navigate);
     } catch (err) {
       setConfirmDeleteOpen(false);
       window.alert(errMsg(err, 'No se pudo eliminar la cuenta. Intenta de nuevo.'));
