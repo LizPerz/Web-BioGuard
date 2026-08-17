@@ -26,26 +26,33 @@ export interface SessionUser {
 let accessTokenMemoria: string | null = null;
 
 // ── Multi-tab sync ─────────────────────────────────────────
-const logoutChannel = typeof BroadcastChannel !== 'undefined'
-  ? new BroadcastChannel('bioguard_auth')
-  : null;
+
+const CHANNEL_NAME = 'bioguard_auth';
+
+let _listenerChannel: BroadcastChannel | null = null;
+let _onLogoutFromOtherTab: (() => void) | null = null;
 
 export function broadcastLogout(): void {
-  logoutChannel?.postMessage({ type: 'logout' });
+  if (typeof BroadcastChannel === 'undefined') return;
+  const ch = new BroadcastChannel(CHANNEL_NAME);
+  ch.postMessage({ type: 'logout' });
+  ch.close();
 }
-
-let _onLogoutFromOtherTab: (() => void) | null = null;
 
 export function onLogoutFromOtherTab(callback: () => void): () => void {
   _onLogoutFromOtherTab = callback;
-  return () => { _onLogoutFromOtherTab = null; };
-}
-
-if (logoutChannel) {
-  logoutChannel.onmessage = (ev) => {
-    if (ev.data?.type === 'logout') {
-      _onLogoutFromOtherTab?.();
-    }
+  if (callback && !_listenerChannel && typeof BroadcastChannel !== 'undefined') {
+    _listenerChannel = new BroadcastChannel(CHANNEL_NAME);
+    _listenerChannel.onmessage = (ev) => {
+      if (ev.data?.type === 'logout') {
+        _onLogoutFromOtherTab?.();
+      }
+    };
+  }
+  return () => {
+    _onLogoutFromOtherTab = null;
+    _listenerChannel?.close();
+    _listenerChannel = null;
   };
 }
 
@@ -70,7 +77,9 @@ function migrateFromLocalStorage(): void {
   }
 }
 
-migrateFromLocalStorage();
+if (typeof localStorage !== 'undefined') {
+  migrateFromLocalStorage();
+}
 
 // ── Session API ─────────────────────────────────────────────
 
