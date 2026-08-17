@@ -1,4 +1,4 @@
-import { getAccessToken, getRefreshToken, getUser, saveSession, clearSession } from './auth.ts';
+import { getAccessToken, getRefreshToken, getUser, saveSession, clearSession, broadcastLogout } from './auth.ts';
 import { API_ORIGIN, fotoSrc } from './security.ts';
 
 // `import.meta.env` es una extensión de Vite que no existe al ejecutar el módulo
@@ -70,7 +70,6 @@ async function renovarToken(): Promise<string | null> {
 }
 
 function refrescarSiNecesario(): Promise<string | null> {
-  // Comparte una sola renovación entre las peticiones simultáneas que fallen con 401.
   if (!refreshEnCurso) {
     refreshEnCurso = renovarToken().finally(() => {
       refreshEnCurso = null;
@@ -79,9 +78,19 @@ function refrescarSiNecesario(): Promise<string | null> {
   return refreshEnCurso;
 }
 
+// ── 401 auto-logout callback ──────────────────────────────
+let _onUnauthorized: (() => void) | null = null;
+
+export function setOnUnauthorizedHandler(handler: () => void): void {
+  _onUnauthorized = handler;
+}
+
 function cerrarSesionExpirada(): void {
   clearSession();
-  if (!window.location.pathname.startsWith('/login')) {
+  broadcastLogout();
+  if (_onUnauthorized) {
+    _onUnauthorized();
+  } else if (!window.location.pathname.startsWith('/login')) {
     window.location.assign('/login?expirada=1');
   }
 }

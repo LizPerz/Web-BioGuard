@@ -1,5 +1,6 @@
 import { STORAGE_KEYS } from './security.ts';
 
+const ACCESS_TOKEN_KEY = STORAGE_KEYS.accessToken;
 const REFRESH_TOKEN_KEY = STORAGE_KEYS.refreshToken;
 const USER_KEY = STORAGE_KEYS.user;
 const ONBOARDING_KEY = STORAGE_KEYS.onboarding;
@@ -23,6 +24,55 @@ export interface SessionUser {
  * backend no soporta cookies httpOnly.
  */
 let accessTokenMemoria: string | null = null;
+
+// ── Multi-tab sync ─────────────────────────────────────────
+const logoutChannel = typeof BroadcastChannel !== 'undefined'
+  ? new BroadcastChannel('bioguard_auth')
+  : null;
+
+export function broadcastLogout(): void {
+  logoutChannel?.postMessage({ type: 'logout' });
+}
+
+let _onLogoutFromOtherTab: (() => void) | null = null;
+
+export function onLogoutFromOtherTab(callback: () => void): () => void {
+  _onLogoutFromOtherTab = callback;
+  return () => { _onLogoutFromOtherTab = null; };
+}
+
+if (logoutChannel) {
+  logoutChannel.onmessage = (ev) => {
+    if (ev.data?.type === 'logout') {
+      _onLogoutFromOtherTab?.();
+    }
+  };
+}
+
+// ── Backward-compatible migration from localStorage ─────────
+
+function migrateFromLocalStorage(): void {
+  const oldToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+  const oldRefresh = localStorage.getItem(REFRESH_TOKEN_KEY);
+  const oldUser = localStorage.getItem(USER_KEY);
+
+  if (oldToken) {
+    sessionStorage.setItem(ACCESS_TOKEN_KEY, oldToken);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
+  if (oldRefresh) {
+    sessionStorage.setItem(REFRESH_TOKEN_KEY, oldRefresh);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+  if (oldUser) {
+    sessionStorage.setItem(USER_KEY, oldUser);
+    localStorage.removeItem(USER_KEY);
+  }
+}
+
+migrateFromLocalStorage();
+
+// ── Session API ─────────────────────────────────────────────
 
 export function saveSession(
   token: string,
@@ -99,4 +149,17 @@ export function updateSessionUser(patch: Partial<SessionUser>): SessionUser | nu
   const updated: SessionUser = { ...user, ...patch };
   sessionStorage.setItem(USER_KEY, JSON.stringify(updated));
   return updated;
+}
+
+// ── Centralized logout ─────────────────────────────────────
+
+export async function performLogout(navigate: (to: string) => void): Promise<void> {
+  const { logout } = await import('./api');
+  const token = getAccessToken();
+  if (token) {
+    try { await logout(token); } catch { /* remote logout failed; local session still cleaned */ }
+  }
+  clearSession();
+  broadcastLogout();
+  navigate('/login');
 }

@@ -48,7 +48,6 @@ function cspMetaPlugin(apiOrigin: string | undefined): Plugin {
   }
 }
 
-// https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const apiOrigin = (env.VITE_API_URL as string | undefined) || undefined
@@ -56,7 +55,6 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), securityHeadersPlugin(), cspMetaPlugin(apiOrigin)],
     build: {
-      // Nunca publicar sourcemaps en producción (evita exponer el código fuente).
       sourcemap: false,
     },
     server: {

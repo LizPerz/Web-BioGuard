@@ -9,7 +9,6 @@ import { ContentCard } from '../../components/ui/ContentCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LineChart } from '../../components/charts/LineChart';
 import { CrearPacienteModal } from '../../components/pacientes/CrearPacienteModal';
-import { mockUser } from '../../data/mockData';
 import { getUser } from '../../lib/auth';
 import {
   getMiPaciente,
@@ -49,8 +48,8 @@ export function Dashboard() {
   const iconKeys = ['HeartPulse', 'Thermometer', 'Droplets', 'Brain', 'Activity', 'Footprints'] as const;
 
   const session = getUser();
-  const firstName = session?.nombre?.split(' ')[0] ?? mockUser.firstName;
-  const planName = session?.plan ?? mockUser.plan;
+  const firstName = session?.nombre?.split(' ')[0] ?? '';
+  const planName = session?.plan ?? '';
 
   const [paciente, setPaciente] = useState<PacienteResponse | null>(null);
   const [loadingPaciente, setLoadingPaciente] = useState(true);

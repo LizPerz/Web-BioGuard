@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { User, ChevronDown, Menu, UserRound, Mail, LockKeyhole, TriangleAlert, LogOut, ReceiptText, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { mockUser, pageTitles } from '../../data/mockData';
-import { getUser, getAccessToken, clearSession, updateSessionUser } from '../../lib/auth';
-import { logout, getMiPerfil } from '../../lib/api';
+import { pageTitles } from '../../data/mockData';
+import { getUser, performLogout, updateSessionUser } from '../../lib/auth';
+import { getMiPerfil } from '../../lib/api';
 import { useTheme } from '../../lib/use-theme';
 import { NotificationsDropdown } from '../notifications/NotificationsDropdown';
 import './dashboard-header.css';
@@ -22,8 +22,8 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
   const [foto, setFoto] = useState<string | null>(session?.fotoPerfil ?? null);
   const [planNombre, setPlanNombre] = useState<string | null>(null);
   const [displayNombre, setDisplayNombre] = useState<string | null>(null);
-  const displayName = displayNombre ?? (session ? session.nombre : `${mockUser.firstName} ${mockUser.lastName}`.trim());
-  const planName = planNombre ?? (session ? session.plan : mockUser.plan);
+  const displayName = displayNombre ?? session?.nombre ?? '';
+  const planName = planNombre ?? session?.plan ?? '';
 
   useEffect(() => {
     let active = true;
@@ -45,18 +45,9 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
     return () => { active = false; };
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setMenuOpen(false);
-    const token = getAccessToken();
-    if (token) {
-      try {
-        await logout(token);
-      } catch {
-        // el logout remoto falló; la sesión local se limpia igual
-      }
-    }
-    clearSession();
-    navigate('/login');
+    performLogout(navigate);
   };
 
   const goTo = (hash: string) => {
