@@ -476,6 +476,7 @@ export function eliminarCuidador(id: string): Promise<void> {
 export interface QrResponse {
   codigoAccesoQr: string;
   codigoExpira: string | null;
+  tokenActivo?: boolean;
 }
 
 export function getQrPaciente(id: string): Promise<QrResponse> {

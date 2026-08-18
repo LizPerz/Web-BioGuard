@@ -224,3 +224,35 @@ test('DevSecOps: SECURITY.md documenta los controles implementados', () => {
   assert.ok(security.includes('lefthook'), 'documenta hooks locales');
   assert.ok(security.includes('licenses') || security.includes('licencias'), 'documenta licencias');
 });
+
+// ── DAST: OWASP ZAP ──────────────────────────────────────────────────────
+
+test('DevSecOps: CI incluye DAST con OWASP ZAP', () => {
+  const workflow = read('.github/workflows/devsecops.yml');
+  assert.ok(workflow.includes('zaproxy/action-baseline'), 'acción de ZAP Baseline');
+  assert.ok(workflow.includes('zap-rules'), 'archivo de reglas ZAP');
+  assert.ok(workflow.includes('bioguard-front:dast'), 'build de imagen para DAST');
+});
+
+test('DevSecOps: existe configuración de reglas ZAP', () => {
+  assert.ok(existsSync(resolve(ROOT, '.github', 'zap-rules.tsv')), 'zap-rules.tsv existe');
+  const rules = read('.github/zap-rules.tsv');
+  assert.ok(rules.includes('10020'), 'regla de CSRF tokens (desabilitada para SPA)');
+  assert.ok(rules.includes('Server Leaks Version'), 'regla de X-Powered-By');
+});
+
+// ── Dockerfile: hardening ────────────────────────────────────────────────
+
+test('DevSecOps: Dockerfile usa --ignore-scripts en npm ci', () => {
+  const dockerfile = read('Dockerfile');
+  assert.ok(dockerfile.includes('npm ci --ignore-scripts'), 'npm ci con --ignore-scripts para bloquear postinstall scripts');
+});
+
+// ── Contenedor: healthcheck y no-root ────────────────────────────────────
+
+test('DevSecOps: contenedor declara healthcheck con curl o wget', () => {
+  const dockerfile = read('Dockerfile');
+  assert.ok(dockerfile.includes('HEALTHCHECK'), 'declara HEALTHCHECK');
+  assert.ok(dockerfile.includes('--interval='), 'tiene interval configurado');
+  assert.ok(dockerfile.includes('--timeout='), 'tiene timeout configurado');
+});

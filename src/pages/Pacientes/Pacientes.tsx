@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { UserRound, UserPlus, Pencil, Trash2, Users, QrCode, RefreshCw, Copy, Check as CheckIcon, Loader2, Clock } from 'lucide-react';
+import { UserRound, UserPlus, Pencil, Trash2, Users, QrCode, RefreshCw, Copy, Check as CheckIcon, Loader2, Clock, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
@@ -69,6 +69,7 @@ export function Pacientes() {
   const [qrError, setQrError] = useState('');
   const [qrMensaje, setQrMensaje] = useState('');
   const [qrCopiado, setQrCopiado] = useState(false);
+  const [qrTokenActivo, setQrTokenActivo] = useState(false);
 
   const cargarTodo = useCallback(async () => {
     setLoading(true);
@@ -152,13 +153,26 @@ export function Pacientes() {
     setQrError('');
     setQrMensaje('');
     setQrCopiado(false);
+    setQrTokenActivo(false);
     try {
       const fn = tipo === 'paciente' ? getQrPaciente : getQrCuidador;
       const res = await fn(id);
+      if (res.tokenActivo) {
+        setQrTokenActivo(true);
+        setQrCodigo('');
+        setQrRestante(0);
+        return;
+      }
       const expira = new Date(res.codigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
       setQrCodigo(res.codigoAccesoQr ?? '');
       setQrRestante(Math.max(0, Math.round((expira.getTime() - Date.now()) / 1000)));
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setQrTokenActivo(true);
+        setQrCodigo('');
+        setQrRestante(0);
+        return;
+      }
       setQrError(errMsg(err));
     } finally {
       setQrCargando(false);
@@ -166,18 +180,30 @@ export function Pacientes() {
   };
 
   const regenerarQr = async () => {
-    if (!qrTarget || qrRegenerando) return;
+    if (!qrTarget || qrRegenerando || qrTokenActivo) return;
     setQrRegenerando(true);
     setQrError('');
     setQrMensaje('');
     try {
       const fn = qrTarget.tipo === 'paciente' ? regenerarQrPaciente : regenerarQrCuidador;
       const res = await fn(qrTarget.id);
+      if (res.tokenActivo) {
+        setQrTokenActivo(true);
+        setQrCodigo('');
+        setQrRestante(0);
+        return;
+      }
       const expira = new Date(res.codigoExpira ?? new Date(Date.now() + 5 * 60 * 1000).toISOString());
       setQrCodigo(res.codigoAccesoQr ?? '');
       setQrRestante(Math.max(0, Math.round((expira.getTime() - Date.now()) / 1000)));
       setQrMensaje('Se generó un nuevo código');
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setQrTokenActivo(true);
+        setQrCodigo('');
+        setQrRestante(0);
+        return;
+      }
       setQrError(errMsg(err));
     } finally {
       setQrRegenerando(false);
@@ -204,10 +230,10 @@ export function Pacientes() {
   }, [qrTarget]);
 
   useEffect(() => {
-    if (qrTarget && qrRestante <= 0 && !qrCargando && !qrRegenerando) {
+    if (qrTarget && qrRestante <= 0 && !qrCargando && !qrRegenerando && !qrTokenActivo) {
       regenerarQr();
     }
-  }, [qrRestante, qrTarget, qrCargando, qrRegenerando]);
+  }, [qrRestante, qrTarget, qrCargando, qrRegenerando, qrTokenActivo]);
 
   const formatearRestante = (s: number) => {
     const m = Math.floor(s / 60);
@@ -627,7 +653,9 @@ export function Pacientes() {
         title="Código de acceso"
         subtitle={
           qrTarget
-            ? `${qrTarget.tipo === 'paciente' ? 'Paciente' : 'Cuidador'}: ${qrTarget.nombre} · escanéalo con la App Móvil`
+            ? qrTokenActivo
+              ? `${qrTarget.tipo === 'paciente' ? 'Paciente' : 'Cuidador'}: ${qrTarget.nombre} · sesión vinculada activa`
+              : `${qrTarget.tipo === 'paciente' ? 'Paciente' : 'Cuidador'}: ${qrTarget.nombre} · escanéalo con la App Móvil`
             : 'Escanéalo con la App Móvil'
         }
       >
@@ -636,6 +664,20 @@ export function Pacientes() {
             <div className="pacientes__qr-loading">
               <Loader2 size={22} strokeWidth={1.8} className="pacientes__spin" />
               Cargando código…
+            </div>
+          ) : qrTokenActivo ? (
+            <div className="pacientes__qr-token-activo">
+              <div className="pacientes__qr-token-activo-icon">
+                <ShieldCheck size={48} strokeWidth={1.5} />
+              </div>
+              <h4 className="pacientes__qr-token-activo-title">Sesión activa</h4>
+              <p className="pacientes__qr-token-activo-text">
+                Este {qrTarget?.tipo === 'paciente' ? 'paciente' : 'cuidador'} ya tiene un dispositivo vinculado con una sesión activa.
+                No es necesario generar un nuevo código de acceso.
+              </p>
+              <p className="pacientes__qr-token-activo-hint">
+                Si necesitas vincular un dispositivo diferente, primero debes cerrar la sesión activa desde la App Móvil.
+              </p>
             </div>
           ) : qrError ? (
             <div className="modal__error" role="alert">

@@ -251,6 +251,50 @@
   padding: 24px 0;
 }
 
+.pacientes__qr-token-activo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  max-width: 320px;
+}
+
+.pacientes__qr-token-activo-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--success, #22c55e);
+}
+
+.pacientes__qr-token-activo-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.pacientes__qr-token-activo-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pacientes__qr-token-activo-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.08));
+}
+
 .pacientes__qr-box {
   width: 196px;
   height: 196px;
