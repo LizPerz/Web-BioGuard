@@ -161,7 +161,7 @@ export function Health() {
         ]);
         setPaciente(p);
         setPlan(pl);
-    } catch {
+    } catch (err) {
         setError(errMsg(err));
       } finally {
         setCargando(false);
