@@ -41,7 +41,7 @@ export function broadcastLogout(): void {
 
 export function onLogoutFromOtherTab(callback: () => void): () => void {
   _onLogoutFromOtherTab = callback;
-  if (callback && !_listenerChannel && typeof BroadcastChannel !== 'undefined') {
+  if (!_listenerChannel && typeof BroadcastChannel !== 'undefined') {
     _listenerChannel = new BroadcastChannel(CHANNEL_NAME);
     _listenerChannel.onmessage = (ev) => {
       if (ev.data?.type === 'logout') {
