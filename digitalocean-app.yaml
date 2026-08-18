@@ -41,7 +41,7 @@ services:
     # envs:
     #   - key: VITE_API_URL
     #     scope: BUILD_TIME
-    #     value: https://bioguard-api-lkvnq.ondigitalocean.app
+    #     value: https://api-xxxx.ondigitalocean.app  # Ofuscado: reemplaza con la URL real
     routes:
       - path: /
         # Sin CORS abierto: orígenes EXACTOS, nunca prefijos. Un prefijo

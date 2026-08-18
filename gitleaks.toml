@@ -50,7 +50,6 @@ description = "Rutas y patrones que no deben considerarse secretos"
 paths = [
   '''gitleaks\.toml''',
   '''\.semgrep/''',
-  '''\.github/workflows/''',
   '''SECURITY\.md''',
   '''README\.md''',
   '''package-lock\.json''',

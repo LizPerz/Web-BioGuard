@@ -1,9 +1,8 @@
 # BioGuard · CODEOWNERS
 #
-# TODO: sustituye "your-org/team" por equipos reales del repositorio.
 # Sintaxis: https://docs.github.com/es/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-* @your-org/frontend-team
+* @LizPerz
 
 # Archivos sensibles de seguridad requieren revisión explícita del equipo.
 SECURITY.md

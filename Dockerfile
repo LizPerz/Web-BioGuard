@@ -5,6 +5,7 @@
 
 # ── Etapa 1: build ─────────────────────────────────────────────────────────
 FROM node:24-alpine AS build
+# Pin: node:24-alpine para reproducibilidad del build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -24,6 +25,7 @@ RUN npm run build
 # (no root): si un atacante compromete el proceso, no gana privilegios en el
 # contenedor. Escucha en el puerto 8080 (los puertos bajos requieren root).
 FROM nginxinc/nginx-unprivileged:1.27-alpine
+# Pin: nginx-unprivileged:1.27-alpine para reproducibilidad
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html

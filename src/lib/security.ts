@@ -31,7 +31,7 @@ const FONTS_FILES_ORIGIN = 'https://fonts.gstatic.com';
 export const CSP_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
-  `style-src 'self' 'unsafe-inline' ${FONTS_CSS_ORIGIN}`,
+  `style-src 'self' 'unsafe-inline' ${FONTS_CSS_ORIGIN}`, // unsafe-inline: requerido por estilos inline de React
   `img-src 'self' data: blob: ${MAP_ORIGIN}`,
   `connect-src 'self' ${API_ORIGIN}`,
   `font-src 'self' data: ${FONTS_FILES_ORIGIN}`,

@@ -145,7 +145,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     // backend en la UI para no filtrar detalles internos (stack traces,
     // mensajes de DB, rutas internas, etc.); se registra solo en consola.
     if (res.status >= 500) {
-      if (body) console.warn('[api] error de servidor', res.status, body);
+      console.warn('[api] error de servidor', res.status);
       throw new ApiError(`Error del servidor (${res.status})`, res.status);
     }
     const message = body?.message ?? body?.title ?? `Error de la solicitud (${res.status})`;

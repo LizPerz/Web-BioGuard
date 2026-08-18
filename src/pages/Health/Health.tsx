@@ -230,7 +230,7 @@ export function Health() {
       const pred = await getPrediccionActual(paciente.id);
       setPrediccionActual(pred);
     } catch (err) {
-      console.warn('Error cargando predicción ML actual:', err);
+      console.warn('Error cargando predicción ML actual');
       setPrediccionActual(null);
     } finally {
       setCargandoPredicciones(false);
