@@ -1,0 +1,50 @@
+# OWASP ZAP Baseline Rules for BioGuard Frontend
+# Formato:规则ID	Activo	Historia	Intensidad	Categoría	Descripción
+# Referencia: https://www.zaproxy.org/docs/docker/baseline-scan/
+
+# XSS (Cross-Site Scripting)
+10020	True	High	MEDIUM	INJECTION	Anti-CSRF Tokens Check (SPA usa Bearer tokens)
+10021	True	High	MEDIUM	INJECTION	Cross Site Scripting (DOM)
+10022	True	High	MEDIUM	INJECTION	Cross Site Scripting (Reflected)
+10023	True	High	MEDIUM	INJECTION	Cross Site Scripting (Persistent)
+
+# SQL Injection
+10024	True	High	MEDIUM	INJECTION	SQL Injection
+10025	True	High	MEDIUM	INJECTION	SQL Injection (MySQL)
+10026	True	High	MEDIUM	INJECTION	SQL Injection (Hypersonic)
+10027	True	High	MEDIUM	INJECTION	SQL Injection (Oracle)
+10028	True	High	MEDIUM	INJECTION	SQL Injection (PostgreSQL)
+
+# Security Headers
+10011	True	High	LOW	PASSIVE_SECURITY_HEADER	Server Leaks Version via "X-Powered-By" HTTP Response Header
+10015	True	High	LOW	PASSIVE_SECURITY_HEADER	X-Content-Type-Options Header Missing
+10016	True	High	LOW	PASSIVE_SECURITY_HEADER	X-Frame-Options Header Missing
+10017	True	High	LOW	PASSIVE_SECURITY_HEADER	Cross-Domain Misconfiguration
+10019	True	High	LOW	PASSIVE_SECURITY_HEADER	Strict-Transport-Security Header Missing
+10020	True	High	LOW	PASSIVE_SECURITY_HEADER	Content Security Policy Header Missing
+10021	True	High	LOW	PASSIVE_SECURITY_HEADER	X-Content-Type-Options Header Missing
+
+# Cookie Security
+10010	True	High	LOW	COOKIE_COOKIE_FLAG	Missing Anti-clickjacking Header
+10011	True	High	LOW	COOKIE_COOKIE_FLAG	Cookie Without SameSite Attribute
+10012	True	High	LOW	COOKIE_COOKIE_FLAG	Cookie Without Secure Flag
+
+# Information Disclosure
+10023	True	High	LOW	INFORMATION_DISCLOSURE	Information Disclosure - Debug Messages
+10024	True	High	LOW	INFORMATION_DISCLOSURE	Information Disclosure - Sensitive Information in URL
+10025	True	High	LOW	INFORMATION_DISCLOSURE	Information Disclosure - Sensitive Information in HTTP Referrer Header
+10026	True	High	LOW	INFORMATION_DISCLOSURE	Information Disclosure - Suspicious Comments
+
+# Transport Security
+10040	True	High	MEDIUM	TRANSPORT_SERVER_CERT	Server Certificate Not Verified By Endpoint
+10041	True	High	LOW	TRANSPORT_SERVER_CERT	SSL Certificate Error
+
+# Path Traversal
+10045	True	High	HIGH	INJECTION	Source Code Disclosure - /WEB-INF
+10046	True	High	HIGH	INJECTION	Remote OS Command Injection
+
+# Server Side Request Forgery
+10047	True	High	HIGH	INJECTION	Server Side Request Forgery
+
+# Negative Rules (Deshabilitar reglas que no aplican a SPA)
+10020	False	Low	LOW	INJECTION	Absence of Anti-CSRF Tokens (SPA usa Bearer tokens, no CSRF)
