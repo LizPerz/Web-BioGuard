@@ -157,7 +157,8 @@ export function Pacientes() {
     try {
       const fn = tipo === 'paciente' ? getQrPaciente : getQrCuidador;
       const res = await fn(id);
-      if (res.tokenActivo) {
+      const tieneCodigo = Boolean(res.codigoAccesoQr);
+      if (res.tokenActivo && !tieneCodigo) {
         setQrTokenActivo(true);
         setQrCodigo('');
         setQrRestante(0);
@@ -187,7 +188,8 @@ export function Pacientes() {
     try {
       const fn = qrTarget.tipo === 'paciente' ? regenerarQrPaciente : regenerarQrCuidador;
       const res = await fn(qrTarget.id);
-      if (res.tokenActivo) {
+      const tieneCodigo = Boolean(res.codigoAccesoQr);
+      if (res.tokenActivo && !tieneCodigo) {
         setQrTokenActivo(true);
         setQrCodigo('');
         setQrRestante(0);
