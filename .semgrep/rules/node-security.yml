@@ -1,0 +1,47 @@
+rules:
+  - id: node-command-injection
+    message: >-
+      Ejecución de comandos del sistema con argumentos potencialmente dinámicos.
+      Valida y sanitiza toda entrada del usuario antes de pasarla a exec/spawn.
+      Prefiere execFile y evita shell: true.
+    languages: [javascript, typescript]
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: $MODULE.exec($CMD)
+          - pattern: $MODULE.execSync($CMD)
+          - pattern: $MODULE.exec($CMD, $OPTS)
+          - pattern: $MODULE.execSync($CMD, $OPTS)
+          - pattern: "$MODULE.spawn($CMD, ..., { shell: true })"
+      - pattern-not: $MODULE.exec("$CONST")
+      - pattern-not: $MODULE.execSync("$CONST")
+
+  - id: no-require-of-relative-untracked
+    message: >-
+      Carga dinámica de módulos mediante require con ruta variable. Puede
+      permitir cargar código no autorizado si la ruta proviene del usuario.
+    languages: [javascript, typescript]
+    severity: WARNING
+    pattern: $MODULE.require($PATH)
+
+  - id: no-insecure-random
+    message: >-
+      Uso de Math.random() para propósitos de seguridad (tokens, contraseñas,
+      códigos). Usa crypto.getRandomValues o el módulo crypto de Node.
+    languages: [javascript, typescript]
+    severity: WARNING
+    pattern: Math.random()
+    paths:
+      exclude:
+        - '**/src/simulation/'
+        - '**/src/test/'
+
+  - id: no-base64-for-passwords
+    message: >-
+      Codificar contraseñas o secretos con base64 no es cifrado y es trivial de
+      decodificar. Usa bcrypt/argon2 en el servidor.
+    languages: [javascript, typescript]
+    severity: WARNING
+    pattern-either:
+      - pattern: btoa($PASSWORD)
+      - pattern: Buffer.from($PASSWORD, 'utf8').toString('base64')

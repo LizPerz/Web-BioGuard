@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, CreditCard, Loader2, Lock } from 'lucide-react';
+import { Check, Loader2, Lock } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { PrimaryButton, GhostButton } from '../../components/ui/buttons';
 import { PricingCard } from '../../components/pricing/PricingCard';
 import { Modal } from '../../components/ui/Modal';
-import { TextInput } from '../../components/ui/inputs';
 import { getPlanes, simularPago, ApiError, type PlanResponse } from '../../lib/api';
 import { getPendingOnboarding, clearPendingOnboarding, updateSessionPlan } from '../../lib/auth';
 import { beneficiosCompletos, precioTexto } from '../../lib/plans';
@@ -15,17 +14,6 @@ import './SelectPlan.css';
 function errMsg(err: unknown, fallback = 'Ocurrió un error inesperado. Intenta de nuevo.') {
   return err instanceof ApiError ? err.message : fallback;
 }
-
-const formatearNumero = (v: string) =>
-  v.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
-
-const formatearExpiracion = (v: string) => {
-  const d = v.replace(/\D/g, '').slice(0, 4);
-  if (d.length <= 2) return d;
-  return `${d.slice(0, 2)}/${d.slice(2)}`;
-};
-
-const formatearCvc = (v: string) => v.replace(/\D/g, '').slice(0, 4);
 
 export function SelectPlan() {
   const navigate = useNavigate();
@@ -37,10 +25,6 @@ export function SelectPlan() {
 
   const [pagoOpen, setPagoOpen] = useState(false);
   const [planSeleccionado, setPlanSeleccionado] = useState<PlanResponse | null>(null);
-  const [cardNombre, setCardNombre] = useState('');
-  const [cardNumero, setCardNumero] = useState('');
-  const [cardExpiracion, setCardExpiracion] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
   const [procesando, setProcesando] = useState(false);
   const [pagoError, setPagoError] = useState('');
   const [pagoExito, setPagoExito] = useState(false);
@@ -88,10 +72,6 @@ export function SelectPlan() {
 
   const seleccionarPlan = (plan: PlanResponse) => {
     setPlanSeleccionado(plan);
-    setCardNombre('');
-    setCardNumero('');
-    setCardExpiracion('');
-    setCardCvc('');
     setPagoError('');
     setPagoExito(false);
     setPagoOpen(true);
@@ -99,25 +79,6 @@ export function SelectPlan() {
 
   const procesarPago = async () => {
     if (!planSeleccionado) return;
-    const digitos = cardNumero.replace(/\D/g, '');
-    const [mm] = cardExpiracion.split('/');
-    const mes = Number(mm);
-    if (digitos.length < 12) {
-      setPagoError('El número de tarjeta debe tener al menos 12 dígitos');
-      return;
-    }
-    if (cardExpiracion.length !== 5 || mes < 1 || mes > 12) {
-      setPagoError('La fecha de expiración no es válida (MM/AA)');
-      return;
-    }
-    if (cardCvc.length < 3) {
-      setPagoError('El código de seguridad (CVC) debe tener 3 o 4 dígitos');
-      return;
-    }
-    if (!cardNombre.trim()) {
-      setPagoError('El nombre del titular es obligatorio');
-      return;
-    }
     setProcesando(true);
     setPagoError('');
     try {
@@ -206,39 +167,6 @@ export function SelectPlan() {
               <span>Plan {planSeleccionado.nombre}</span>
               <span>{precioTexto(planSeleccionado)}</span>
             </div>
-            <TextInput
-              label="Nombre del titular"
-              name="cardNombre"
-              placeholder="Como aparece en la tarjeta"
-              value={cardNombre}
-              onChange={(e) => setCardNombre(e.target.value)}
-            />
-            <TextInput
-              label="Número de tarjeta"
-              name="cardNumero"
-              placeholder="4242 4242 4242 4242"
-              inputMode="numeric"
-              value={cardNumero}
-              onChange={(e) => setCardNumero(formatearNumero(e.target.value))}
-            />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <TextInput
-                label="Expiración"
-                name="cardExpiracion"
-                placeholder="MM/AA"
-                inputMode="numeric"
-                value={cardExpiracion}
-                onChange={(e) => setCardExpiracion(formatearExpiracion(e.target.value))}
-              />
-              <TextInput
-                label="CVC"
-                name="cardCvc"
-                placeholder="123"
-                inputMode="numeric"
-                value={cardCvc}
-                onChange={(e) => setCardCvc(formatearCvc(e.target.value))}
-              />
-            </div>
             {pagoError && (
               <div className="modal__error" role="alert">
                 {pagoError}
@@ -246,15 +174,16 @@ export function SelectPlan() {
             )}
             <div className="select-plan__pago-nota">
               <Lock size={13} strokeWidth={1.8} />
-              Simulación de pago: al confirmar, el plan se activa y desbloquea sus funciones.
+              Pago simulado: no se solicitan datos de tarjeta. Al confirmar, el
+              plan se activa y desbloquea sus funciones.
             </div>
             <div className="modal__actions">
               <GhostButton type="button" onClick={() => setPagoOpen(false)} disabled={procesando}>
                 ← Elegir otro plan
               </GhostButton>
               <PrimaryButton type="button" onClick={procesarPago} disabled={procesando}>
-                {procesando ? <Loader2 size={14} strokeWidth={1.8} className="select-plan__spin" /> : <CreditCard size={14} strokeWidth={1.8} />}
-                {procesando ? 'Procesando…' : `Pagar ${precioTexto(planSeleccionado)}`}
+                {procesando ? <Loader2 size={14} strokeWidth={1.8} className="select-plan__spin" /> : <Check size={14} strokeWidth={1.8} />}
+                {procesando ? 'Procesando…' : `Activar plan ${precioTexto(planSeleccionado)}`}
               </PrimaryButton>
             </div>
           </div>

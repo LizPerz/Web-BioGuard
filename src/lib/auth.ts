@@ -1,8 +1,10 @@
-const ACCESS_TOKEN_KEY = 'bioguard_access_token';
-const REFRESH_TOKEN_KEY = 'bioguard_refresh_token';
-const USER_KEY = 'bioguard_user';
-const ONBOARDING_KEY = 'bioguard_pending_onboarding';
-const PENDING_VERIFY_EMAIL_KEY = 'bioguard_pending_verify_email';
+import { STORAGE_KEYS } from './security.ts';
+
+const ACCESS_TOKEN_KEY = STORAGE_KEYS.accessToken;
+const REFRESH_TOKEN_KEY = STORAGE_KEYS.refreshToken;
+const USER_KEY = STORAGE_KEYS.user;
+const ONBOARDING_KEY = STORAGE_KEYS.onboarding;
+const PENDING_VERIFY_EMAIL_KEY = STORAGE_KEYS.pendingVerifyEmail;
 
 export interface SessionUser {
   id: string;
@@ -13,35 +15,48 @@ export interface SessionUser {
   fotoPerfil?: string | null;
 }
 
+/**
+ * Access token en memoria del módulo: nunca se persiste en el navegador (ni
+ * en disco, ni en el sync de cuentas, ni se comparte entre pestañas). Al
+ * cargar la app se restaura con `restaurarSesion()` (src/lib/api.ts), que
+ * renueva el access token vía /api/Auth/refresh si existe refresh token en
+ * sessionStorage. Es el patrón recomendado por OWASP para SPAs cuando el
+ * backend no soporta cookies httpOnly.
+ */
+let accessTokenMemoria: string | null = null;
+
 // ── Multi-tab sync ─────────────────────────────────────────
-const logoutChannel = typeof BroadcastChannel !== 'undefined'
-  ? new BroadcastChannel('bioguard_auth')
-  : null;
+
+const CHANNEL_NAME = 'bioguard_auth';
+
+let _listenerChannel: BroadcastChannel | null = null;
+let _onLogoutFromOtherTab: (() => void) | null = null;
 
 export function broadcastLogout(): void {
-  logoutChannel?.postMessage({ type: 'logout' });
+  if (typeof BroadcastChannel === 'undefined') return;
+  const ch = new BroadcastChannel(CHANNEL_NAME);
+  ch.postMessage({ type: 'logout' });
+  ch.close();
 }
-
-let _onLogoutFromOtherTab: (() => void) | null = null;
 
 export function onLogoutFromOtherTab(callback: () => void): () => void {
   _onLogoutFromOtherTab = callback;
-  return () => { _onLogoutFromOtherTab = null; };
-}
-
-if (logoutChannel) {
-  logoutChannel.onmessage = (ev) => {
-    if (ev.data?.type === 'logout') {
-      _onLogoutFromOtherTab?.();
-    }
+  if (!_listenerChannel && typeof BroadcastChannel !== 'undefined') {
+    _listenerChannel = new BroadcastChannel(CHANNEL_NAME);
+    _listenerChannel.onmessage = (ev) => {
+      if (ev.data?.type === 'logout') {
+        _onLogoutFromOtherTab?.();
+      }
+    };
+  }
+  return () => {
+    _onLogoutFromOtherTab = null;
+    _listenerChannel?.close();
+    _listenerChannel = null;
   };
 }
 
-// ── Storage helpers (sessionStorage for tokens, backward-compatible migration) ──
-
-function readFromboth(key: string): string | null {
-  return sessionStorage.getItem(key) ?? localStorage.getItem(key);
-}
+// ── Backward-compatible migration from localStorage ─────────
 
 function migrateFromLocalStorage(): void {
   const oldToken = localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -62,8 +77,9 @@ function migrateFromLocalStorage(): void {
   }
 }
 
-// Run migration once on module load (survives SPA navigations, clears on tab close)
-migrateFromLocalStorage();
+if (typeof localStorage !== 'undefined') {
+  migrateFromLocalStorage();
+}
 
 // ── Session API ─────────────────────────────────────────────
 
@@ -72,13 +88,13 @@ export function saveSession(
   refreshTokenValue: string | null | undefined,
   user: SessionUser,
 ): void {
-  sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+  accessTokenMemoria = token;
   if (refreshTokenValue) sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshTokenValue);
   sessionStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function getAccessToken(): string | null {
-  return sessionStorage.getItem(ACCESS_TOKEN_KEY);
+  return accessTokenMemoria;
 }
 
 export function getRefreshToken(): string | null {
@@ -96,7 +112,7 @@ export function getUser(): SessionUser | null {
 }
 
 export function clearSession(): void {
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+  accessTokenMemoria = null;
   sessionStorage.removeItem(REFRESH_TOKEN_KEY);
   sessionStorage.removeItem(USER_KEY);
 }

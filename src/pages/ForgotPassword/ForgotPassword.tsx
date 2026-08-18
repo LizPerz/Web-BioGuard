@@ -78,7 +78,9 @@ export function ForgotPassword() {
         if (res.abierto) {
           sessionStorage.removeItem(STORAGE_KEY);
           setEsperando(false);
-          navigate(`/reset-password?token=${encodeURIComponent(token ?? '')}&requestId=${requestId}`);
+          // El token viaja por estado del router, nunca por la URL (evita que
+          // quede en historial del navegador, logs de servidor/proxy y sync).
+          navigate('/reset-password', { state: { token: token ?? '', requestId } });
         }
       } catch {
         // Sin conexión: se reintenta en el siguiente tick

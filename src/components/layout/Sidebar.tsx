@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutGrid, FileBarChart2, Users, Settings, LogOut, Crown, X
+  LayoutGrid, FileBarChart2, Users, MapPin, Settings, LogOut, Crown, X
 } from 'lucide-react';
 import { getUser, performLogout } from '../../lib/auth';
 import './sidebar.css';
@@ -19,6 +19,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     { path: '/dashboard', label: 'Panel', icon: LayoutGrid },
     { path: '/health', label: 'Reportes', icon: FileBarChart2 },
     { path: '/pacientes', label: 'Pacientes y Cuidadores', icon: Users },
+    { path: '/ubicacion', label: 'Ubicación', icon: MapPin },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);

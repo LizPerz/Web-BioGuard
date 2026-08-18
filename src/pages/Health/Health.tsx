@@ -12,6 +12,7 @@ import {
   Loader2,
   Check,
   UserRound,
+  Brain,
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -105,6 +106,21 @@ function errMsg(err: unknown, fallback = 'Ocurrió un error inesperado. Intenta 
   return err instanceof ApiError ? err.message : fallback;
 }
 
+function estadoValor(v: number | null, min: number, max: number) {
+  if (v == null) return { label: 'Sin datos', tone: 'neutral' as const };
+  if (v < min) return { label: 'Bajo', tone: 'info' as const };
+  if (v > max) return { label: 'Elevado', tone: 'danger' as const };
+  return { label: 'Normal', tone: 'success' as const };
+}
+
+function formatearSexo(sexo?: string | null): string {
+  if (!sexo) return '';
+  const s = sexo.toLowerCase();
+  if (s.startsWith('f')) return 'Femenino';
+  if (s.startsWith('m')) return 'Masculino';
+  return sexo;
+}
+
 export function Health() {
   const [paciente, setPaciente] = useState<PacienteResponse | null>(null);
   const [plan, setPlan] = useState<PlanResponse | null>(null);
@@ -145,7 +161,7 @@ export function Health() {
         ]);
         setPaciente(p);
         setPlan(pl);
-      } catch (err) {
+    } catch (err) {
         setError(errMsg(err));
       } finally {
         setCargando(false);
@@ -214,7 +230,7 @@ export function Health() {
       const pred = await getPrediccionActual(paciente.id);
       setPrediccionActual(pred);
     } catch (err) {
-      console.warn('Error cargando predicción ML actual:', err);
+      console.warn('Error cargando predicción ML actual');
       setPrediccionActual(null);
     } finally {
       setCargandoPredicciones(false);
@@ -275,6 +291,84 @@ export function Health() {
         riesgo: Math.max(...items.map((l) => l.probabilidadPico)),
       }));
   }, [reporte]);
+
+  const imc = useMemo(() => {
+    if (!paciente?.pesoKg || !paciente?.estaturaCm) return null;
+    const h = paciente.estaturaCm / 100;
+    if (h <= 0) return null;
+    return paciente.pesoKg / (h * h);
+  }, [paciente]);
+
+  const sexoLabel = formatearSexo(paciente?.sexo);
+
+  const clasificacionRiesgo = useMemo(() => {
+    const lecturas = reporte?.lecturas ?? [];
+    if (!lecturas.length) return null;
+    return {
+      bajo: lecturas.filter((l) => l.probabilidadPico < 0.3).length,
+      moderado: lecturas.filter((l) => l.probabilidadPico >= 0.3 && l.probabilidadPico < 0.7).length,
+      alto: lecturas.filter((l) => l.probabilidadPico >= 0.7).length,
+    };
+  }, [reporte]);
+
+  const estados = useMemo(
+    () => ({
+      pulso: estadoValor(metricas.promedioPulso, 60, 100),
+      temp: estadoValor(metricas.promedioTemp, 36.1, 37.2),
+      estres: estadoValor(metricas.promedioEstres, 40, 70),
+      riesgo: estadoValor(metricas.riesgoMax != null ? metricas.riesgoMax * 100 : null, 30, 70),
+    }),
+    [metricas],
+  );
+
+  const resumen = useMemo(() => {
+    const partes: string[] = [];
+    const lecturas = reporte?.lecturas ?? [];
+    if (!lecturas.length) {
+      partes.push('No se registraron lecturas de sensores en el período consultado.');
+    } else {
+      if (metricas.promedioPulso != null) {
+        const p = metricas.promedioPulso;
+        const d = p >= 60 && p <= 100 ? 'dentro del rango habitual (60–100 BPM)' : p < 60 ? 'por debajo del rango habitual (60–100 BPM)' : 'por encima del rango habitual (60–100 BPM)';
+        partes.push(`El pulso promedio fue de ${formatearNumero(p)} BPM, ${d}.`);
+      }
+      if (metricas.promedioTemp != null) {
+        const t = metricas.promedioTemp;
+        const d = t >= 36.1 && t <= 37.2 ? 'dentro de la temperatura corporal normal' : 'fuera del rango corporal habitual (36.1–37.2 °C)';
+        partes.push(`La temperatura promedio fue de ${formatearNumero(t, 2)} °C, ${d}.`);
+      }
+      if (metricas.promedioEstres != null) {
+        const e = metricas.promedioEstres;
+        const d = e < 40 ? 'un nivel de estrés bajo' : e < 70 ? 'un nivel de estrés moderado' : 'un nivel de estrés elevado';
+        partes.push(`El estrés promedio fue de ${formatearNumero(e, 0)} %, lo que representa ${d}.`);
+      }
+      if (clasificacionRiesgo) {
+        partes.push(
+          `Del total de lecturas, ${clasificacionRiesgo.bajo} se clasificaron con riesgo bajo, ${clasificacionRiesgo.moderado} con riesgo moderado y ${clasificacionRiesgo.alto} con riesgo alto.`,
+        );
+      }
+    }
+    if (metricas.totalEventos > 0) {
+      partes.push(
+        `Se detectaron ${metricas.totalEventos} evento(s) metabólico(s)${metricas.criticos > 0 ? `, de los cuales ${metricas.criticos} fueron críticos` : ', sin episodios críticos'}.`,
+      );
+    }
+    if (metricas.totalAlertas > 0) {
+      partes.push(`Se generaron ${metricas.totalAlertas} alerta(s) durante el período.`);
+    }
+    return partes.join(' ');
+  }, [metricas, clasificacionRiesgo, reporte]);
+
+  const conclusion = useMemo(() => {
+    const base = 'El monitoreo de BioGuard ofrece una vista general del estado de salud del paciente en el período consultado. ';
+    if (metricas.criticos > 0 || (clasificacionRiesgo && clasificacionRiesgo.alto > 0)) {
+      return base + 'Debido a la presencia de episodios de riesgo alto o eventos críticos, se recomienda dar seguimiento cercano, mantener una hidratación y alimentación adecuadas y consultar a un profesional de la salud.';
+    }
+    if (metricas.totalAlertas > 0) {
+      return base + 'Se recomienda continuar con el monitoreo regular, revisar las alertas registradas y mantener hábitos saludables. Si los síntomas persisten, acudir con un especialista.';
+    }
+    return base + 'Se recomienda mantener el monitoreo periódico y los hábitos saludables para preservar la estabilidad metabólica del paciente.';
+  }, [metricas, clasificacionRiesgo]);
 
   const tieneDatos = !!reporte && (metricas.totalLecturas > 0 || metricas.totalEventos > 0 || metricas.totalAlertas > 0);
 
@@ -380,52 +474,121 @@ export function Health() {
         />
       ) : (
         <div className="reportes__print-area">
-          <div className="reportes__header">
-            <div className="reportes__header-brand">
-              <span className="reportes__header-logo">BioGuard</span>
-              <span className="reportes__header-sub">Reporte de salud</span>
+          {/* Encabezado del documento */}
+          <div className="reportes__doc-header">
+            <div className="reportes__doc-brand">
+              <img src="/bioguard.png" alt="BioGuard" className="reportes__doc-logo" />
+              <div className="reportes__doc-brand-text">
+                <span className="reportes__doc-name">BioGuard</span>
+                <span className="reportes__doc-sub">Monitoreo de salud inteligente</span>
+              </div>
             </div>
-            <div className="reportes__header-meta">
-              <span><strong>Paciente:</strong> {paciente.nombre}</span>
-              <span><strong>Plan:</strong> {plan?.nombre ?? 'Gratis'}</span>
-              <span><strong>Período:</strong> {rangoTexto}</span>
-              <span><strong>Generado:</strong> {formatearFecha(new Date())}</span>
+            <div className="reportes__doc-titles">
+              <span className="reportes__doc-kicker">Documento de monitoreo</span>
+              <h2 className="reportes__doc-title">Reporte de salud</h2>
+              <span className="reportes__doc-period">{rangoTexto}</span>
+            </div>
+          </div>
+          <div className="reportes__doc-rule" />
+
+          {/* Datos del paciente */}
+          <div className="reportes__paciente">
+            <div className="reportes__paciente-id">
+              <div className="reportes__paciente-avatar">
+                <UserRound size={22} strokeWidth={1.8} />
+              </div>
+              <div className="reportes__paciente-main">
+                <span className="reportes__paciente-label">Paciente</span>
+                <h3 className="reportes__paciente-nombre">{paciente.nombre}</h3>
+                <p className="reportes__paciente-detalle">
+                  {[paciente.edad != null ? `${paciente.edad} años` : null, sexoLabel || null, imc != null ? `IMC ${formatearNumero(imc, 1)}` : null]
+                    .filter(Boolean)
+                    .join(' · ') || 'Sin datos biométricos complementarios'}
+                </p>
+              </div>
+            </div>
+            <div className="reportes__paciente-meta">
+              <div className="reportes__paciente-meta-item">
+                <span>Plan</span>
+                <strong>{plan?.nombre ?? 'Gratis'}</strong>
+              </div>
+              <div className="reportes__paciente-meta-item">
+                <span>Período</span>
+                <strong>{rangoTexto}</strong>
+              </div>
+              <div className="reportes__paciente-meta-item">
+                <span>Generado</span>
+                <strong>{formatearFecha(new Date())}</strong>
+              </div>
             </div>
           </div>
 
+          {/* Resumen ejecutivo */}
+          <div className="reportes__resumen">
+            <div className="reportes__resumen-icon">
+              <FileText size={18} strokeWidth={1.8} />
+            </div>
+            <div className="reportes__resumen-body">
+              <h3>Resumen ejecutivo</h3>
+              <p>{resumen}</p>
+            </div>
+          </div>
+
+          {/* KPIs */}
           <div className="reportes__kpi-grid">
             <div className="reportes__kpi">
-              <HeartPulse size={17} strokeWidth={1.8} style={{ color: 'var(--danger)' }} />
+              <span className="reportes__kpi-icon reportes__kpi-icon--pulse">
+                <HeartPulse size={17} strokeWidth={1.8} />
+              </span>
               <span className="reportes__kpi-label">Pulso promedio</span>
               <span className="reportes__kpi-value">{metricas.promedioPulso != null ? formatearNumero(metricas.promedioPulso) : '—'} <small>BPM</small></span>
+              <span className={`reportes__kpi-estado reportes__kpi-estado--${estados.pulso.tone}`}>{estados.pulso.label}</span>
             </div>
             <div className="reportes__kpi">
-              <Thermometer size={17} strokeWidth={1.8} style={{ color: 'var(--cyan)' }} />
+              <span className="reportes__kpi-icon reportes__kpi-icon--temp">
+                <Thermometer size={17} strokeWidth={1.8} />
+              </span>
               <span className="reportes__kpi-label">Temperatura promedio</span>
               <span className="reportes__kpi-value">{metricas.promedioTemp != null ? formatearNumero(metricas.promedioTemp, 2) : '—'} <small>°C</small></span>
+              <span className={`reportes__kpi-estado reportes__kpi-estado--${estados.temp.tone}`}>{estados.temp.label}</span>
             </div>
             <div className="reportes__kpi">
-              <Droplets size={17} strokeWidth={1.8} style={{ color: 'var(--purple)' }} />
+              <span className="reportes__kpi-icon reportes__kpi-icon--estres">
+                <Droplets size={17} strokeWidth={1.8} />
+              </span>
               <span className="reportes__kpi-label">Estrés promedio</span>
               <span className="reportes__kpi-value">{metricas.promedioEstres != null ? formatearNumero(metricas.promedioEstres, 0) : '—'} <small>%</small></span>
+              <span className={`reportes__kpi-estado reportes__kpi-estado--${estados.estres.tone}`}>{estados.estres.label}</span>
             </div>
             <div className="reportes__kpi">
-              <Activity size={17} strokeWidth={1.8} style={{ color: 'var(--warning)' }} />
+              <span className="reportes__kpi-icon reportes__kpi-icon--lecturas">
+                <Activity size={17} strokeWidth={1.8} />
+              </span>
               <span className="reportes__kpi-label">Lecturas</span>
               <span className="reportes__kpi-value">{metricas.totalLecturas}</span>
+              <span className={`reportes__kpi-estado reportes__kpi-estado--${metricas.totalLecturas > 0 ? 'success' : 'neutral'}`}>{metricas.totalLecturas > 0 ? 'Activo' : 'Sin datos'}</span>
             </div>
             <div className="reportes__kpi">
-              <ShieldAlert size={17} strokeWidth={1.8} style={{ color: 'var(--danger)' }} />
+              <span className="reportes__kpi-icon reportes__kpi-icon--riesgo">
+                <ShieldAlert size={17} strokeWidth={1.8} />
+              </span>
               <span className="reportes__kpi-label">Riesgo máximo</span>
               <span className="reportes__kpi-value">{metricas.riesgoMax != null ? `${formatearNumero(metricas.riesgoMax * 100)}%` : '—'}</span>
+              <span className={`reportes__kpi-estado reportes__kpi-estado--${estados.riesgo.tone}`}>{estados.riesgo.label}</span>
             </div>
             <div className="reportes__kpi">
-              <BellRing size={17} strokeWidth={1.8} style={{ color: 'var(--blue)' }} />
+              <span className="reportes__kpi-icon reportes__kpi-icon--eventos">
+                <BellRing size={17} strokeWidth={1.8} />
+              </span>
               <span className="reportes__kpi-label">Eventos</span>
               <span className="reportes__kpi-value">{metricas.totalEventos} <small>{metricas.criticos > 0 ? `${metricas.criticos} crítico${metricas.criticos === 1 ? '' : 's'}` : 'sin críticos'}</small></span>
+              <span className={`reportes__kpi-estado reportes__kpi-estado--${metricas.criticos > 0 ? 'danger' : metricas.totalEventos > 0 ? 'warning' : 'neutral'}`}>
+                {metricas.criticos > 0 ? 'Con críticos' : metricas.totalEventos > 0 ? 'Monitoreado' : 'Sin eventos'}
+              </span>
             </div>
           </div>
 
+          {/* Lecturas por hora/día con gráfica */}
           {metricas.totalLecturas > 0 && (
             <ContentCard className="reportes__tabla-card">
               <div className="reportes__card-title-row" style={{ marginBottom: 12 }}>
@@ -433,6 +596,27 @@ export function Health() {
                 <h3>{reporte.esDia ? 'Lecturas por hora' : 'Lecturas por día'}</h3>
                 <StatusBadge label={`${metricas.totalLecturas} lecturas`} variant="info" />
               </div>
+              <div className="reportes__chart">
+                {filasResumen.map((f) => (
+                  <div className="reportes__chart-col" key={f.grupo}>
+                    <div className="reportes__chart-track">
+                      <div
+                        className="reportes__chart-bar"
+                        style={{
+                          height: `${Math.max(2, Math.round(f.riesgo * 100))}%`,
+                          backgroundColor: f.riesgo < 0.3 ? 'var(--success)' : f.riesgo < 0.7 ? 'var(--warning)' : 'var(--danger)',
+                        }}
+                        title={`${f.grupo}: riesgo ${formatearNumero(f.riesgo * 100)}%`}
+                      />
+                    </div>
+                    <span className="reportes__chart-label">{f.grupo}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="reportes__chart-caption">
+                Riesgo de pico glucémico máximo por {reporte.esDia ? 'hora' : 'día'} (%)
+                <span> · verde: bajo · ámbar: moderado · rojo: alto</span>
+              </p>
               <div className="reportes__tabla-wrap">
                 <table className="reportes__tabla">
                   <thead>
@@ -453,7 +637,7 @@ export function Health() {
                         <td>{formatearNumero(f.pulso)} BPM</td>
                         <td>{formatearNumero(f.temp, 2)} °C</td>
                         <td>{formatearNumero(f.estres, 0)} %</td>
-                        <td>{formatearNumero(f.riesgo * 100)}%</td>
+                        <td className={f.riesgo >= 0.7 ? 'reportes__tabla-critico' : undefined}>{formatearNumero(f.riesgo * 100)}%</td>
                       </tr>
                     ))}
                   </tbody>
@@ -462,21 +646,26 @@ export function Health() {
             </ContentCard>
           )}
 
+          {/* Análisis ML */}
           {cargandoPredicciones ? (
             <ContentCard className="reportes__ml-card">
               <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Cargando análisis ML...</p>
             </ContentCard>
           ) : prediccionActual ? (
             <div className="reportes__ml-section">
-              <h3 style={{ marginBottom: 16, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                📊 Análisis ML - Predicción de Pico Glucémico
-              </h3>
+              <div className="reportes__card-title-row" style={{ marginBottom: 16 }}>
+                <span className="reportes__kpi-icon reportes__kpi-icon--ml">
+                  <Brain size={iconSize} strokeWidth={1.8} />
+                </span>
+                <h3>Análisis ML - Predicción de Pico Glucémico</h3>
+              </div>
               <div className="reportes__ml-grid">
                 <PrediccionMlCard prediccion={prediccionActual} />
               </div>
             </div>
           ) : null}
 
+          {/* Eventos y alertas */}
           <div className="reportes__dos-col">
             {metricas.totalEventos > 0 && (
               <ContentCard className="reportes__lista-card">
@@ -523,9 +712,16 @@ export function Health() {
             )}
           </div>
 
-          <p className="reportes__footer">
-            Generado por BioGuard · Documento informativo de monitoreo, no sustituye un diagnóstico médico.
-          </p>
+          {/* Conclusión */}
+          <div className="reportes__conclusion">
+            <h3>Conclusión</h3>
+            <p>{conclusion}</p>
+          </div>
+
+          <div className="reportes__footer">
+            <span>Generado por BioGuard</span>
+            <span className="reportes__footer-note">Documento informativo de monitoreo, no sustituye un diagnóstico médico.</span>
+          </div>
         </div>
       )}
     </DashboardLayout>

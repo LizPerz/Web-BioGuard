@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Bell, User, ChevronDown, Menu, UserRound, Mail, LockKeyhole, TriangleAlert, LogOut, ReceiptText, Sun, Moon } from 'lucide-react';
+import { User, ChevronDown, Menu, UserRound, Mail, LockKeyhole, TriangleAlert, LogOut, ReceiptText, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { pageTitles } from '../../data/mockData';
 import { getUser, performLogout, updateSessionUser } from '../../lib/auth';
 import { getMiPerfil } from '../../lib/api';
 import { useTheme } from '../../lib/use-theme';
+import { fotoSrc } from '../../lib/security';
+import { NotificationsDropdown } from '../notifications/NotificationsDropdown';
 import './dashboard-header.css';
 
 interface DashboardHeaderProps {
@@ -78,9 +80,7 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
       </div>
 
       <div className="dashboard-header__right">
-        <button className="dashboard-header__bell" aria-label="Notificaciones">
-          <Bell size={20} strokeWidth={1.8} />
-        </button>
+        <NotificationsDropdown />
 
         <div className="dashboard-header__user-wrap">
           <button
@@ -90,8 +90,8 @@ export function DashboardHeader({ onToggleMenu }: DashboardHeaderProps) {
             aria-expanded={menuOpen}
           >
             <div className="dashboard-header__avatar">
-              {foto
-                ? <img src={foto} alt="Foto de perfil" className="dashboard-header__avatar-img" />
+              {fotoSrc(foto)
+                ? <img src={fotoSrc(foto)} alt="Foto de perfil" className="dashboard-header__avatar-img" />
                 : <User size={17} strokeWidth={1.8} />}
             </div>
             <span className="dashboard-header__name">{displayName}</span>

@@ -1,0 +1,28 @@
+# Build artifacts
+dist/
+dist-ssr/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Lockfiles (generated)
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
+
+# Git / CI internals
+.git/
+.github/
+.semgrep/
+.semgrep_logs/
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Editor files
+.vscode/
+.idea/

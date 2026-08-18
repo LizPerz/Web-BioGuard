@@ -1,0 +1,58 @@
+rules:
+  - id: react-anchor-target-blank-noopener
+    message: >-
+      Enlace con target="_blank" sin rel="noopener noreferrer". Esto expone a
+      la vulnerabilidad de "reverse tabnabbing". Añade
+      rel="noopener noreferrer" a todos los enlaces externos.
+    languages: [javascript, typescript]
+    severity: ERROR
+    patterns:
+      - pattern: <$TAG ... target="_blank">...</$TAG>
+      - pattern-not: <$TAG ... rel="noopener">...</$TAG>
+      - pattern-not: <$TAG ... rel="noreferrer">...</$TAG>
+      - pattern-not: <$TAG ... rel="noopener noreferrer">...</$TAG>
+      - pattern-not: <$TAG ... rel="noreferrer noopener">...</$TAG>
+
+  - id: react-no-session-token-in-components
+    message: >-
+      Escritura de valores de sesión/autorización en almacenamiento desde un
+      archivo arbitrario. Toda la gestión de tokens debe pasar por
+      src/lib/auth.ts. No almacenes tokens ni secretos en el navegador salvo
+      en los helpers centralizados.
+    languages: [javascript, typescript]
+    severity: ERROR
+    patterns:
+      - pattern-regex: >-
+          (?:localStorage|sessionStorage)\.setItem\(\s*["'][^"']*(?:token|session|access|refresh|auth|password|credential)[^"']*["']
+    paths:
+      exclude:
+        - src/test/
+        - src/lib/auth.ts
+
+  - id: react-iframe-sandbox-missing
+    message: >-
+      iframe sin atributo sandbox. Añade sandbox="allow-scripts allow-same-origin"
+      únicamente si es imprescindible, o usa las restricciones mínimas.
+    languages: [javascript, typescript]
+    severity: WARNING
+    patterns:
+      - pattern: <iframe ...></iframe>
+      - pattern-not: <iframe ... sandbox=...></iframe>
+
+  - id: react-img-non-https
+    message: >-
+      Imagen cargada con protocolo http://. Usa https:// para evitar contenido
+      mezclado y ataques MITM.
+    languages: [javascript, typescript]
+    severity: WARNING
+    pattern-regex: \b(?:src|href|poster)\s*[:=]\s*["']http://
+
+  - id: react-unsafe-form-action
+    message: >-
+      Formulario con action hacia un destino no controlado. Asegúrate de que la
+      acción del formulario apunte a orígenes de confianza.
+    languages: [javascript, typescript]
+    severity: WARNING
+    pattern-either:
+      - pattern: <form ... action={$V}>...</form>
+      - pattern: <form ... action="$V">...</form>

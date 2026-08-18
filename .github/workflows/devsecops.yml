@@ -1,0 +1,235 @@
+name: DevSecOps CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # Lunes 06:00 UTC: escaneos periódicos
+  workflow_dispatch:
+
+concurrency:
+  group: devsecops-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ── Calidad: lint + typecheck + pruebas + build ──────────────────────────
+  quality:
+    name: Calidad (lint · type · tests · build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint (oxlint)
+        run: npm run lint
+
+      - name: Typecheck (tsc)
+        run: npm run typecheck
+
+      - name: Pruebas de seguridad (node:test)
+        run: npm run test
+
+      - name: Verificación de licencias
+        run: npm run security:licenses
+
+      - name: Build de producción
+        run: npm run build
+
+      - name: Subir build como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+
+  # ── SAST con Semgrep (reglas propias + registros oficiales) ─────────────
+  sast:
+    name: SAST · Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Semgrep se instala con pip para evitar los fallos de `docker pull
+      # semgrep/semgrep` (rate-limit de Docker Hub en runners de GitHub).
+      - name: Instalar Semgrep
+        run: pip3 install --quiet 'semgrep==1.130.0'
+
+      - name: Semgrep (reglas .semgrep/rules) — bloqueante
+        run: semgrep scan --config .semgrep/rules --metrics=off --error --sarif-output semgrep.sarif .
+
+      - name: Comprobar si semgrep.sarif tiene resultados
+        id: check-semgrep
+        if: always()
+        run: |
+          if [ -f semgrep.sarif ] && jq -e '[.runs[].results[]] | length > 0' semgrep.sarif >/dev/null 2>&1; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Subir resultados (reglas propias)
+        if: steps.check-semgrep.outputs.has_results == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+      - name: Semgrep (registros oficiales p/javascript · p/react · p/owasp-top-ten)
+        run: semgrep scan --config p/javascript --config p/react --config p/owasp-top-ten --metrics=off --sarif-output semgrep-owasp.sarif .
+        # No bloquea el pipeline: los hallazgos se publican en Code Scanning
+        # y se revisan/triajean. Activa --error cuando la base esté limpia.
+        continue-on-error: true
+
+      - name: Comprobar si semgrep-owasp.sarif tiene resultados
+        id: check-semgrep-owasp
+        if: always()
+        run: |
+          if [ -f semgrep-owasp.sarif ] && jq -e '[.runs[].results[]] | length > 0' semgrep-owasp.sarif >/dev/null 2>&1; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Subir resultados (registros oficiales)
+        if: steps.check-semgrep-owasp.outputs.has_results == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep-owasp.sarif
+          category: semgrep-owasp
+
+  # ── Escaneo de secretos con Gitleaks ─────────────────────────────────────
+  secrets:
+    name: Secretos · Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (historial completo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Solo necesario para repositorios de organización.
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_CONFIG: gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: 'false'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'true'
+          GITLEAKS_ENABLE_SUMMARY: 'true'
+
+  # ── Auditoría de dependencias (SCA) + SBOM ───────────────────────────────
+  deps:
+    name: Dependencias · npm audit + SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Auditoría de vulnerabilidades
+        run: npm audit --audit-level=high
+
+      - name: Generar SBOM (CycloneDX)
+        run: npm sbom --sbom-format=cyclonedx > sbom.cdx.json
+        continue-on-error: true
+
+      - name: Subir SBOM como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          if-no-files-found: ignore
+
+  # ── Escaneo del contenedor con Trivy ─────────────────────────────────────
+  trivy:
+    name: Contenedor · Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build de la imagen
+        run: docker build -t bioguard-front:ci .
+        continue-on-error: true
+        id: docker-build
+
+      - name: Trivy (imagen)
+        if: steps.docker-build.outcome == 'success'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: bioguard-front:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: sarif
+          output: trivy.sarif
+        # No bloquea: publica los hallazgos en Code Scanning. Cambia a
+        # `exit-code: '1'` cuando la imagen esté limpia de HIGH/CRITICAL.
+        continue-on-error: true
+
+      - name: Comprobar si trivy.sarif tiene resultados
+        id: check-trivy
+        if: always()
+        run: |
+          if [ -f trivy.sarif ] && jq -e '[.runs[].results[]] | length > 0' trivy.sarif >/dev/null 2>&1; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Subir resultados
+        if: steps.check-trivy.outputs.has_results == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+
+  # ── Escaneo de infraestructura como código (IaC) con Checkov ─────────────
+  iac:
+    name: IaC · Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: all
+          output_format: cli,sarif
+          output_file_path: console,checkov.sarif
+          quiet: true
+          # soft_fail: los hallazgos se publican en Code Scanning sin bloquear.
+          soft_fail: true
+
+      - name: Subir resultados
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov.sarif
+          category: checkov

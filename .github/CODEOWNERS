@@ -1,0 +1,15 @@
+# BioGuard · CODEOWNERS
+#
+# Sintaxis: https://docs.github.com/es/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @LizPerz
+
+# Archivos sensibles de seguridad requieren revisión explícita del equipo.
+SECURITY.md
+README.md
+gitleaks.toml
+.github/workflows/devsecops.yml
+.github/workflows/codeql.yml
+Dockerfile
+nginx.conf
+digitalocean-app.yaml

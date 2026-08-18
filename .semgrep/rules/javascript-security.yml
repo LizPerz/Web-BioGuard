@@ -1,0 +1,62 @@
+rules:
+  - id: no-eval
+    message: >-
+      Uso de eval() o del constructor Function detectado. Estas APIs ejecutan
+      código arbitrario y pueden habilitar XSS o inyección de comandos.
+      Usa alternativas seguras (JSON.parse con validación, parsers, etc.).
+    languages: [javascript, typescript]
+    severity: ERROR
+    pattern-either:
+      - pattern: eval($ARG)
+      - pattern: new Function($ARG)
+      - pattern: Function($ARG)
+      - pattern: $MODULE.runInThisContext($ARG)
+
+  - id: no-unsafe-dom-mutation
+    message: >-
+      Asignación de HTML mediante innerHTML / outerHTML / insertAdjacentHTML /
+      document.write detectada. Si el contenido proviene del usuario puede
+      causar XSS. Construye el DOM con createElement o librerías seguras.
+    languages: [javascript, typescript]
+    severity: ERROR
+    pattern-either:
+      - pattern: $EL.innerHTML = $VAL
+      - pattern: $EL.outerHTML = $VAL
+      - pattern: $EL.insertAdjacentHTML($POS, $VAL)
+      - pattern: document.write($VAL)
+      - pattern: document.writeln($VAL)
+
+  - id: react-dangerously-set-inner-html
+    message: >-
+      Uso de dangerouslySetInnerHTML detectado. Evita inyectar HTML en React
+      salvo que el contenido esté 100% sanitizado y controlado. Prefiere
+      componentes seguros y texto plano.
+    languages: [javascript, typescript]
+    severity: ERROR
+    pattern: dangerouslySetInnerHTML={$VALUE}
+
+  - id: no-javascript-url
+    message: >-
+      Se detecta una URL 'javascript:' en un atributo href/src/action. Permite
+      ejecutar código al hacer clic (XSS). Usa URL http/https válidas o controla
+      el origen.
+    languages: [javascript, typescript, html]
+    severity: ERROR
+    pattern-regex: '(?:href|src|action|formaction)\s*=\s*["'']\s*javascript:'
+    metadata:
+      technology:
+        - react
+        - javascript
+
+  - id: no-dynamic-script-src
+    message: >-
+      Carga dinámica de scripts con src controlado por variables. Si el valor
+      proviene de entrada externa puede cargar código arbitrario. Valida el
+      origen y usa URLs de confianza.
+    languages: [javascript, typescript]
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: document.createElement('script')
+          - pattern: document.createElement("script")
+      - pattern-not: document.createElement('script'); $EL.src = "https://..."

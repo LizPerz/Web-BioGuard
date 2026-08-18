@@ -3,24 +3,41 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "typecheck": "tsc -b",
+    "test": "node --test \"src/test/*.test.ts\"",
+    "test:watch": "node --test --watch \"src/test/*.test.ts\"",
+    "prepare": "lefthook install || true",
+    "security:audit": "npm audit --audit-level=high",
+    "security:sast": "node scripts/security-sast.mjs",
+    "security:secrets": "node scripts/security-secrets.mjs",
+    "security:licenses": "node scripts/license-check.mjs",
+    "security": "npm run security:audit && npm run security:sast && npm run security:secrets && npm run security:licenses",
+    "security:all": "npm run lint && npm run typecheck && npm run test && npm run security"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.28.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "lefthook": "^2.1.10",
     "oxlint": "^1.75.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"

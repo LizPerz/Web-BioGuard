@@ -1,0 +1,64 @@
+# BioGuard - Gitleaks configuration
+# Extiende las reglas por defecto de gitleaks y añade reglas propias.
+
+title = "BioGuard gitleaks config"
+
+[extend]
+useDefault = true
+
+# Reglas personalizadas del proyecto -----------------------------------------
+[[rules]]
+id = "bioguard-refresh-token-literal"
+description = "RefreshToken hardcodeado como literal en el frontend"
+# secret-group=1: la entropía se mide solo sobre el valor entre comillas
+# (evita falsos positivos con nombres de clave como 'bioguard_refresh_token').
+regex = '''(?i)refresh[_ -]?token\s*[:=]\s*["']([A-Za-z0-9_+\/.\-=]{16,})["']'''
+secret-group = 1
+entropy = 4.0
+keywords = ["refresh", "token"]
+
+[[rules]]
+id = "mongodb-connection-string"
+description = "MongoDB connection string con credenciales (mongodb(srv)://user:pass@host)"
+regex = '''mongodb(?:\+srv)?://[^\s:]+:[^\s@]+@[^\s/?#]+'''
+secret-group = 0
+keywords = ["mongodb"]
+
+[[rules]]
+id = "bioguard-jwt-secret"
+description = "JWT secret key hardcodeado (JWT_SECRET_KEY=valor)"
+regex = '''(?i)jwt[_-]?secret[_-]?key\s*[:=]\s*[A-Za-z0-9_+!@#$%^&*()=\-]{16,}'''
+secret-group = 0
+keywords = ["jwt", "secret"]
+
+[[rules]]
+id = "digitalocean-token"
+description = "Token de DigitalOcean (usado por el backend) expuesto"
+regex = '''dop_v1_[a-f0-9]{64}'''
+secret-group = 0
+
+[[rules]]
+id = "stripe-live-key"
+description = "Llave secreta de Stripe (live)"
+regex = '''sk_live_[0-9a-zA-Z]{24,}'''
+secret-group = 0
+keywords = ["sk_live_"]
+
+# Allowlist global ------------------------------------------------------------
+[allowlist]
+description = "Rutas y patrones que no deben considerarse secretos"
+paths = [
+  '''gitleaks\.toml''',
+  '''\.semgrep/''',
+  '''SECURITY\.md''',
+  '''README\.md''',
+  '''package-lock\.json''',
+]
+regexes = [
+  # Solo valores de ejemplo/documentación. NO incluir aquí prefijos de
+  # credenciales reales (sk_live_, dop_v1_, AKIA, ghp_, …): eso desactivaría
+  # la detección de fugas reales. Los ejemplos de .semgrep/, src/test/ y
+  # docs ya quedan cubiertos por la lista de `paths`.
+  '''(PASSWORD|PASSWD|SECRET|TOKEN|KEY)\s*=\s*["']?(example|changeme|xxxxx|\*\*\*\*\*)["']?''',
+  '''changeme''',
+]

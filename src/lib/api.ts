@@ -1,6 +1,12 @@
-import { getAccessToken, clearSession, broadcastLogout } from './auth';
+import { getAccessToken, getRefreshToken, getUser, saveSession, clearSession, broadcastLogout } from './auth.ts';
+import { API_ORIGIN, fotoSrc } from './security.ts';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://bioguard-api-lkvnq.ondigitalocean.app';
+// `import.meta.env` es una extensión de Vite que no existe al ejecutar el módulo
+// bajo Node (pruebas). El acceso opcional evita lanzar en ese entorno y Vite
+// sigue sustituyendo `import.meta.env` en build/serve.
+const viteEnv = import.meta.env as { VITE_API_URL?: string; DEV?: boolean } | undefined;
+
+export const API_BASE_URL = viteEnv?.VITE_API_URL ?? (viteEnv?.DEV ? '' : API_ORIGIN);
 
 export class ApiError extends Error {
   status: number;
@@ -17,44 +23,132 @@ interface ApiErrorBody {
   title?: string;
 }
 
+// Endpoints públicos: en ellos un 401 significa credenciales inválidas,
+// no una sesión expirada, por lo que no deben forzar el cierre de sesión.
+const RUTAS_PUBLICAS = [
+  '/api/Auth/login-web',
+  '/api/Auth/register',
+  '/api/Auth/forgot-password',
+  '/api/Auth/reset-password',
+  '/api/Auth/2FA/enviar',
+  '/api/Auth/2FA/verificar',
+  '/api/Auth/refresh',
+];
+
+let refreshEnCurso: Promise<string | null> | null = null;
+
+/**
+ * Restaura la sesión al cargar la app: si hay refresh token en sessionStorage
+ * pero no hay access token en memoria (p. ej. tras recargar la página), lo
+ * renueva silenciosamente. Devuelve true si queda una sesión activa.
+ * Se invoca desde main.tsx antes de renderizar el árbol de React.
+ */
+export async function restaurarSesion(): Promise<boolean> {
+  if (getAccessToken()) return true;
+  if (!getRefreshToken()) return false;
+  const nuevo = await renovarToken();
+  return Boolean(nuevo);
+}
+
+async function renovarToken(): Promise<string | null> {
+  const refreshTokenValue = getRefreshToken();
+  if (!refreshTokenValue) return null;
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/Auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ RefreshToken: refreshTokenValue }),
+    });
+    const body: { accessToken?: string; refreshToken?: string } | null = await res.json().catch(() => null);
+    if (!res.ok || !body?.accessToken) return null;
+    const user = getUser();
+    saveSession(body.accessToken, body.refreshToken ?? refreshTokenValue, user ?? { id: '', nombre: '', rol: '', plan: '' });
+    return body.accessToken;
+  } catch {
+    return null;
+  }
+}
+
+function refrescarSiNecesario(): Promise<string | null> {
+  if (!refreshEnCurso) {
+    refreshEnCurso = renovarToken().finally(() => {
+      refreshEnCurso = null;
+    });
+  }
+  return refreshEnCurso;
+}
+
 // ── 401 auto-logout callback ──────────────────────────────
 let _onUnauthorized: (() => void) | null = null;
-let _handling401 = false;
 
 export function setOnUnauthorizedHandler(handler: () => void): void {
   _onUnauthorized = handler;
 }
 
+function cerrarSesionExpirada(): void {
+  clearSession();
+  broadcastLogout();
+  if (_onUnauthorized) {
+    _onUnauthorized();
+  } else if (!window.location.pathname.startsWith('/login')) {
+    window.location.assign('/login?expirada=1');
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getAccessToken();
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE_URL}${path}`, {
+  const llamar = async (tok: string | null): Promise<Response> =>
+    fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(tok ? { Authorization: `Bearer ${tok}` } : {}),
         ...options.headers,
       },
     });
+
+  let res: Response;
+  try {
+    res = await llamar(token);
   } catch {
     throw new ApiError('No se pudo conectar con el servidor. Intenta de nuevo.', 0);
   }
 
-  // Auto-logout on 401: clear session, broadcast to other tabs, redirect
-  if (res.status === 401 && !_handling401) {
-    _handling401 = true;
-    clearSession();
-    broadcastLogout();
-    _onUnauthorized?.();
-    setTimeout(() => { _handling401 = false; }, 500);
-    throw new ApiError('Sesión expirada. Inicia sesión de nuevo.', 401);
+  const leerBody = async (r: Response): Promise<ApiErrorBody | null> => r.json().catch(() => null);
+  let body = await leerBody(res);
+
+  // Token vencido: intentar renovarlo una sola vez y reintentar la petición.
+  if (res.status === 401 && token) {
+    const esRutaPublica = RUTAS_PUBLICAS.some((r) => path.startsWith(r));
+    const nuevoToken = await refrescarSiNecesario();
+
+    if (nuevoToken) {
+      try {
+        res = await llamar(nuevoToken);
+      } catch {
+        throw new ApiError('No se pudo conectar con el servidor. Intenta de nuevo.', 0);
+      }
+      body = await leerBody(res);
+      if (res.ok) return body as T;
+      if (!esRutaPublica && res.status === 401) {
+        cerrarSesionExpirada();
+        throw new ApiError('Tu sesión expiró. Inicia sesión de nuevo.', 401);
+      }
+    } else if (!esRutaPublica) {
+      cerrarSesionExpirada();
+      throw new ApiError('Tu sesión expiró. Inicia sesión de nuevo.', 401);
+    }
   }
 
-  const body: ApiErrorBody | null = await res.json().catch(() => null);
-
   if (!res.ok) {
-    const message = body?.message ?? body?.title ?? `Error del servidor (${res.status})`;
+    // Errores 5xx: mensaje genérico al usuario. Nunca se muestra el body del
+    // backend en la UI para no filtrar detalles internos (stack traces,
+    // mensajes de DB, rutas internas, etc.); se registra solo en consola.
+    if (res.status >= 500) {
+      console.warn('[api] error de servidor', res.status);
+      throw new ApiError(`Error del servidor (${res.status})`, res.status);
+    }
+    const message = body?.message ?? body?.title ?? `Error de la solicitud (${res.status})`;
     throw new ApiError(message, res.status);
   }
 
@@ -204,12 +298,9 @@ export interface MiPerfilResponse {
   fotoPerfil?: string | null;
 }
 
-export function fotoSrc(foto?: string | null): string | undefined {
-  if (!foto || foto.trim() === '') return undefined;
-  const recorte = foto.trim();
-  if (recorte.startsWith('data:')) return recorte;
-  return `data:image/jpeg;base64,${recorte}`;
-}
+// Re-export de la utilidad de sanitización de imágenes (definida en security.ts)
+// para no romper los imports existentes de los componentes.
+export { fotoSrc };
 
 export function getMiPerfil(): Promise<MiPerfilResponse> {
   return request<MiPerfilResponse>('/api/UsuariosWeb/mi-perfil');
@@ -510,7 +601,7 @@ export interface PrediccionMlResponse {
   id: string;
   pacienteId: string;
   probabilidadPico: number;
-  nivelRiesgo: string;
+  nivelRiesgo: string | null;
   casoClinico: string;
   imc: number;
   z: number;
@@ -526,4 +617,60 @@ export function getPredicciones(pacienteId: string): Promise<PrediccionMlRespons
 
 export function getPrediccionActual(pacienteId: string): Promise<PrediccionMlResponse> {
   return request<PrediccionMlResponse>(`/api/Sensores/predicciones/${pacienteId}/actual`);
+}
+
+// ── Ubicación GPS ───────────────────────────────────────
+
+export interface UbicacionGpsResponse {
+  id?: string;
+  pacienteId?: string;
+  latitud: number;
+  longitud: number;
+  precision?: number | null;
+  tipo?: 'emergencia' | 'continua' | string;
+  timestamp: string;
+}
+
+export function getUbicacionActual(pacienteId: string): Promise<UbicacionGpsResponse> {
+  return request<UbicacionGpsResponse>(`/api/Sensores/tracking/${pacienteId}/actual`);
+}
+
+export function getRutaUbicaciones(
+  pacienteId: string,
+  desde: string,
+  hasta: string,
+): Promise<UbicacionGpsResponse[]> {
+  const params = new URLSearchParams({ desde, hasta });
+  return request<UbicacionGpsResponse[]>(`/api/Sensores/tracking/${pacienteId}/ruta?${params.toString()}`);
+}
+
+// ── Notificaciones ───────────────────────────────────────
+
+export interface NotificacionResponse {
+  id: string;
+  titulo: string;
+  mensaje: string;
+  tipo?: string;
+  nivel?: string;
+  leida: boolean;
+  pacienteId?: string;
+  fechaCreacion: string;
+}
+
+export function getNotificaciones(): Promise<NotificacionResponse[]> {
+  return request<NotificacionResponse[]>('/api/Notificaciones');
+}
+
+export function getNotificacionesByPaciente(
+  pacienteId: string,
+): Promise<NotificacionResponse[]> {
+  return request<NotificacionResponse[]>(`/api/Notificaciones/by-paciente/${pacienteId}`);
+}
+
+export function marcarNotificacionLeida(id: string): Promise<unknown> {
+  return request<unknown>(`/api/Notificaciones/${id}/leer`, { method: 'PUT' });
+}
+
+export function eliminarNotificacion(id: string): Promise<void> {
+  return request<void>(`/api/Notificaciones/${id}`, { method: 'DELETE' });
 }

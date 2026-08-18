@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Login } from './pages/Login/Login';
 import { Register } from './pages/Register/Register';
@@ -17,14 +17,16 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { setOnUnauthorizedHandler } from './lib/api';
 import { onLogoutFromOtherTab, clearSession } from './lib/auth';
 
+const Ubicacion = lazy(() =>
+  import('./pages/Ubicacion/Ubicacion').then((m) => ({ default: m.Ubicacion })),
+);
+
 function AppRoutes() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Auto-redirect to /login on 401 from any API call
     setOnUnauthorizedHandler(() => navigate('/login', { replace: true }));
 
-    // Sync logout from other tabs
     const unsub = onLogoutFromOtherTab(() => {
       clearSession();
       navigate('/login', { replace: true });
@@ -48,6 +50,22 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/health" element={<ProtectedRoute><Health /></ProtectedRoute>} />
       <Route path="/pacientes" element={<ProtectedRoute><Pacientes /></ProtectedRoute>} />
+      <Route
+        path="/ubicacion"
+        element={
+          <ProtectedRoute>
+            <Suspense
+              fallback={
+                <div style={{ padding: 40, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+                  Cargando mapa…
+                </div>
+              }
+            >
+              <Ubicacion />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       <Route path="/planes" element={<ProtectedRoute><SelectPlan /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
